@@ -1,4 +1,5 @@
 <?php
+
 /**
  * OptionsPage - Options page builder
  *
@@ -18,7 +19,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class OptionsPage
  *
@@ -36,7 +36,6 @@ class OptionsPage
      * @var array
      */
     private array $config;
-
     /**
      * Field types instance.
      *
@@ -44,7 +43,6 @@ class OptionsPage
      * @var FieldTypes
      */
     private FieldTypes $field_types;
-
     /**
      * Storage instance.
      *
@@ -52,30 +50,27 @@ class OptionsPage
      * @var Storage
      */
     private Storage $storage;
-
     /**
      * Registered sections.
      *
      * @since 1.0.0
      * @var array
      */
-    private array $sections = [];
-
+    private array $sections = array();
     /**
      * Registered fields organized by section.
      *
      * @since 1.0.0
      * @var array
      */
-    private array $fields = [];
-
+    private array $fields = array();
     /**
      * Default configuration values.
      *
      * @since 1.0.0
      * @var array
      */
-    private array $defaults = [
+    private array $defaults = array(
         'page_title'  => 'Options',
         'menu_title'  => 'Options',
         'capability'  => 'manage_options',
@@ -84,10 +79,9 @@ class OptionsPage
         'icon_url'    => 'dashicons-admin-generic',
         'position'    => null,
         'option_name' => '',
-        'tabs'        => [],
-        'sections'    => [],
-    ];
-
+        'tabs'        => array(),
+        'sections'    => array(),
+    );
     /**
      * Constructor.
      *
@@ -101,7 +95,6 @@ class OptionsPage
         $this->config = wp_parse_args($config, $this->defaults);
         $this->field_types = $field_types;
         $this->storage = $storage;
-
         // Set option name from menu slug if not provided.
         if (empty($this->config['option_name'])) {
             $this->config['option_name'] = str_replace('-', '_', $this->config['menu_slug']);
@@ -120,19 +113,19 @@ class OptionsPage
     private function processSections(): void
     {
         // Handle tabbed interface.
-        if (!empty($this->config['tabs'])) {
+        if (! empty($this->config['tabs'])) {
             foreach ($this->config['tabs'] as $tab_id => $tab) {
-                if (!empty($tab['sections'])) {
+                if (! empty($tab['sections'])) {
                     foreach ($tab['sections'] as $section_id => $section) {
-                        $section['tab'] = $tab_id;
-                        $this->addSection($section_id, $section);
+                            $section['tab'] = $tab_id;
+                            $this->addSection($section_id, $section);
                     }
                 }
             }
         }
 
         // Handle non-tabbed sections.
-        if (!empty($this->config['sections'])) {
+        if (! empty($this->config['sections'])) {
             foreach ($this->config['sections'] as $section_id => $section) {
                 $this->addSection($section_id, $section);
             }
@@ -149,15 +142,17 @@ class OptionsPage
      */
     public function addSection(string $section_id, array $section): self
     {
-        $this->sections[$section_id] = wp_parse_args($section, [
-            'title'       => '',
-            'description' => '',
-            'tab'         => '',
-            'fields'      => [],
-        ]);
-
+        $this->sections[ $section_id ] = wp_parse_args(
+            $section,
+            array(
+                'title'       => '',
+                'description' => '',
+                'tab'         => '',
+                'fields'      => array(),
+            )
+        );
         // Process fields for this section.
-        if (!empty($section['fields'])) {
+        if (! empty($section['fields'])) {
             foreach ($section['fields'] as $field) {
                 $this->addField($section_id, $field);
             }
@@ -176,12 +171,11 @@ class OptionsPage
      */
     public function addField(string $section_id, array $field): self
     {
-        if (!isset($this->fields[$section_id])) {
-            $this->fields[$section_id] = [];
+        if (! isset($this->fields[ $section_id ])) {
+            $this->fields[ $section_id ] = array();
         }
 
-        $this->fields[$section_id][] = $field;
-
+        $this->fields[ $section_id ][] = $field;
         return $this;
     }
 
@@ -215,27 +209,12 @@ class OptionsPage
      */
     public function register(): void
     {
-        if (!empty($this->config['parent_slug'])) {
+        if (! empty($this->config['parent_slug'])) {
             // Add as submenu page.
-            add_submenu_page(
-                $this->config['parent_slug'],
-                $this->config['page_title'],
-                $this->config['menu_title'],
-                $this->config['capability'],
-                $this->config['menu_slug'],
-                [$this, 'renderPage']
-            );
+            add_submenu_page($this->config['parent_slug'], $this->config['page_title'], $this->config['menu_title'], $this->config['capability'], $this->config['menu_slug'], array( $this, 'renderPage' ));
         } else {
             // Add as top-level menu page.
-            add_menu_page(
-                $this->config['page_title'],
-                $this->config['menu_title'],
-                $this->config['capability'],
-                $this->config['menu_slug'],
-                [$this, 'renderPage'],
-                $this->config['icon_url'],
-                $this->config['position']
-            );
+            add_menu_page($this->config['page_title'], $this->config['menu_title'], $this->config['capability'], $this->config['menu_slug'], array( $this, 'renderPage' ), $this->config['icon_url'], $this->config['position']);
         }
     }
 
@@ -251,27 +230,26 @@ class OptionsPage
         register_setting(
             $this->config['menu_slug'],
             $this->config['option_name'],
-            [
+            array(
                 'type'              => 'array',
-                'sanitize_callback' => [$this, 'sanitizeOptions'],
-                'default'           => [],
-            ]
+                'sanitize_callback' => array( $this, 'sanitizeOptions' ),
+                'default'           => array(),
+            )
         );
-
         // Register sections.
         foreach ($this->sections as $section_id => $section) {
             add_settings_section(
                 $section_id,
                 $section['title'],
                 function () use ($section) {
+
                     $this->renderSectionDescription($section);
                 },
                 $this->config['menu_slug']
             );
-
             // Register fields for this section.
-            if (!empty($this->fields[$section_id])) {
-                foreach ($this->fields[$section_id] as $field) {
+            if (! empty($this->fields[ $section_id ])) {
+                foreach ($this->fields[ $section_id ] as $field) {
                     $this->registerField($section_id, $field);
                 }
             }
@@ -289,12 +267,13 @@ class OptionsPage
     private function registerField(string $section_id, array $field): void
     {
         // Skip layout-only fields.
-        $layout_types = ['heading', 'separator', 'html', 'message'];
+        $layout_types = array( 'heading', 'separator', 'html', 'message' );
         if (in_array($field['type'] ?? 'text', $layout_types, true)) {
             add_settings_field(
                 $field['id'],
                 '',
                 function () use ($field) {
+
                     echo $this->field_types->render($field, null);
                 },
                 $this->config['menu_slug'],
@@ -307,14 +286,15 @@ class OptionsPage
             $field['id'],
             $field['label'] ?? '',
             function () use ($field) {
+
                 $this->renderField($field);
             },
             $this->config['menu_slug'],
             $section_id,
-            [
+            array(
                 'label_for' => $field['id'],
-                'class'     => 'kp-wsf-field-row kp-wsf-field-row--' . ($field['type'] ?? 'text'),
-            ]
+                'class'     => 'kp-wsf-field-row kp-wsf-field-row--' . ( $field['type'] ?? 'text' ),
+            )
         );
     }
 
@@ -327,18 +307,13 @@ class OptionsPage
     public function renderPage(): void
     {
         // Check user capability.
-        if (!current_user_can($this->config['capability'])) {
+        if (! current_user_can($this->config['capability'])) {
             return;
         }
 
         // Show settings saved message.
         if (isset($_GET['settings-updated'])) {
-            add_settings_error(
-                $this->config['menu_slug'] . '_messages',
-                $this->config['menu_slug'] . '_message',
-                __('Settings Saved', 'kp-wsf'),
-                'updated'
-            );
+            add_settings_error($this->config['menu_slug'] . '_messages', $this->config['menu_slug'] . '_message', __('Settings Saved', 'kp-wsf'), 'updated');
         }
 
         ?>
@@ -347,11 +322,17 @@ class OptionsPage
 
             <?php settings_errors($this->config['menu_slug'] . '_messages'); ?>
 
-            <?php if (!empty($this->config['tabs'])): ?>
+            <?php
+            if (! empty($this->config['tabs'])) :
+                ?>
                 <?php $this->renderTabs(); ?>
-            <?php else: ?>
+                <?php
+            else :
+                ?>
                 <?php $this->renderForm(); ?>
-            <?php endif; ?>
+                <?php
+            endif;
+            ?>
         </div>
         <?php
     }
@@ -366,20 +347,13 @@ class OptionsPage
     {
         $tabs = $this->config['tabs'];
         $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
-
         // Render tab navigation.
         echo '<nav class="nav-tab-wrapper wp-clearfix">';
         foreach ($tabs as $tab_id => $tab) {
-            $active = ($current_tab === $tab_id) ? ' nav-tab-active' : '';
-            printf(
-                '<a href="%s" class="nav-tab%s">%s</a>',
-                esc_url(add_query_arg('tab', $tab_id)),
-                esc_attr($active),
-                esc_html($tab['title'] ?? $tab_id)
-            );
+            $active = ( $current_tab === $tab_id ) ? ' nav-tab-active' : '';
+            printf('<a href="%s" class="nav-tab%s">%s</a>', esc_url(add_query_arg('tab', $tab_id)), esc_attr($active), esc_html($tab['title'] ?? $tab_id));
         }
         echo '</nav>';
-
         // Render form with only current tab's sections.
         $this->renderForm($current_tab);
     }
@@ -397,9 +371,8 @@ class OptionsPage
         <form action="options.php" method="post" class="kp-wsf-options-form">
             <?php
             settings_fields($this->config['menu_slug']);
-
             // If tabbed, only show sections for current tab.
-            if (!empty($current_tab)) {
+            if (! empty($current_tab)) {
                 $this->renderTabSections($current_tab);
             } else {
                 do_settings_sections($this->config['menu_slug']);
@@ -421,16 +394,14 @@ class OptionsPage
     private function renderTabSections(string $tab_id): void
     {
         global $wp_settings_sections, $wp_settings_fields;
-
         $page = $this->config['menu_slug'];
-
-        if (!isset($wp_settings_sections[$page])) {
+        if (! isset($wp_settings_sections[ $page ])) {
             return;
         }
 
-        foreach ($wp_settings_sections[$page] as $section_id => $section) {
+        foreach ($wp_settings_sections[ $page ] as $section_id => $section) {
             // Check if section belongs to current tab.
-            if (!isset($this->sections[$section_id]) || $this->sections[$section_id]['tab'] !== $tab_id) {
+            if (! isset($this->sections[ $section_id ]) || $this->sections[ $section_id ]['tab'] !== $tab_id) {
                 continue;
             }
 
@@ -443,7 +414,7 @@ class OptionsPage
                 call_user_func($section['callback'], $section);
             }
 
-            if (!isset($wp_settings_fields[$page][$section_id])) {
+            if (! isset($wp_settings_fields[ $page ][ $section_id ])) {
                 continue;
             }
 
@@ -462,7 +433,7 @@ class OptionsPage
      */
     private function renderSectionDescription(array $section): void
     {
-        if (!empty($section['description'])) {
+        if (! empty($section['description'])) {
             printf('<p class="description">%s</p>', wp_kses_post($section['description']));
         }
     }
@@ -477,17 +448,14 @@ class OptionsPage
     private function renderField(array $field): void
     {
         // Get current value from options.
-        $options = $this->storage->getOption($this->config['option_name'], []);
-        $value = $options[$field['id']] ?? ($field['default'] ?? null);
-
+        $options = $this->storage->getOption($this->config['option_name'], array());
+        $value = $options[ $field['id'] ] ?? ( $field['default'] ?? null );
         // Set the field name to use array notation for the option.
         $field['name'] = sprintf('%s[%s]', $this->config['option_name'], $field['id']);
-
         // Render the field.
         echo $this->field_types->render($field, $value);
-
         // Render description if present.
-        if (!empty($field['description'])) {
+        if (! empty($field['description'])) {
             printf('<p class="description">%s</p>', wp_kses_post($field['description']));
         }
     }
@@ -501,29 +469,28 @@ class OptionsPage
      */
     public function sanitizeOptions(mixed $input): array
     {
-        if (!is_array($input)) {
-            return [];
+        if (! is_array($input)) {
+            return array();
         }
 
-        $sanitized = [];
+        $sanitized = array();
         $sanitizer = new Sanitizer();
-
         // Get all registered fields.
-        $all_fields = [];
+        $all_fields = array();
         foreach ($this->fields as $section_fields) {
             foreach ($section_fields as $field) {
-                $all_fields[$field['id']] = $field;
+                $all_fields[ $field['id'] ] = $field;
             }
         }
 
         // Sanitize each field value.
         foreach ($input as $key => $value) {
-            if (isset($all_fields[$key])) {
-                $field = $all_fields[$key];
-                $sanitized[$key] = $sanitizer->sanitize($value, $field);
+            if (isset($all_fields[ $key ])) {
+                $field = $all_fields[ $key ];
+                $sanitized[ $key ] = $sanitizer->sanitize($value, $field);
             } else {
                 // Unknown field, apply basic sanitization.
-                $sanitized[$key] = $sanitizer->sanitizeUnknown($value);
+                $sanitized[ $key ] = $sanitizer->sanitizeUnknown($value);
             }
         }
 
@@ -538,7 +505,7 @@ class OptionsPage
      */
     public function getOptions(): array
     {
-        return $this->storage->getOption($this->config['option_name'], []);
+        return $this->storage->getOption($this->config['option_name'], array());
     }
 
     /**
@@ -552,7 +519,7 @@ class OptionsPage
     public function getOption(string $key, mixed $default = null): mixed
     {
         $options = $this->getOptions();
-        return $options[$key] ?? $default;
+        return $options[ $key ] ?? $default;
     }
 
     /**
@@ -566,7 +533,7 @@ class OptionsPage
     public function updateOption(string $key, mixed $value): bool
     {
         $options = $this->getOptions();
-        $options[$key] = $value;
+        $options[ $key ] = $value;
         return $this->storage->updateOption($this->config['option_name'], $options);
     }
 
@@ -580,7 +547,7 @@ class OptionsPage
     public function deleteOption(string $key): bool
     {
         $options = $this->getOptions();
-        unset($options[$key]);
+        unset($options[ $key ]);
         return $this->storage->updateOption($this->config['option_name'], $options);
     }
 }

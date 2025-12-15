@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Storage - Unified storage API
  *
@@ -18,7 +19,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class Storage
  *
@@ -35,8 +35,7 @@ class Storage
      * @since 1.0.0
      * @var array
      */
-    private array $cache = [];
-
+    private array $cache = array();
     /**
      * Whether to use caching.
      *
@@ -44,7 +43,6 @@ class Storage
      * @var bool
      */
     private bool $use_cache = true;
-
     /**
      * Constructor.
      *
@@ -71,15 +69,13 @@ class Storage
     public function getOption(string $option, mixed $default = null): mixed
     {
         $cache_key = 'option_' . $option;
-
-        if ($this->use_cache && isset($this->cache[$cache_key])) {
-            return $this->cache[$cache_key];
+        if ($this->use_cache && isset($this->cache[ $cache_key ])) {
+            return $this->cache[ $cache_key ];
         }
 
         $value = get_option($option, $default);
-
         if ($this->use_cache) {
-            $this->cache[$cache_key] = $value;
+            $this->cache[ $cache_key ] = $value;
         }
 
         return $value;
@@ -97,10 +93,9 @@ class Storage
     public function updateOption(string $option, mixed $value, bool $autoload = true): bool
     {
         $result = update_option($option, $value, $autoload);
-
         // Update cache.
         if ($this->use_cache) {
-            $this->cache['option_' . $option] = $value;
+            $this->cache[ 'option_' . $option ] = $value;
         }
 
         return $result;
@@ -116,10 +111,9 @@ class Storage
     public function deleteOption(string $option): bool
     {
         $result = delete_option($option);
-
         // Clear cache.
         if ($this->use_cache) {
-            unset($this->cache['option_' . $option]);
+            unset($this->cache[ 'option_' . $option ]);
         }
 
         return $result;
@@ -136,13 +130,12 @@ class Storage
      */
     public function getOptionKey(string $option, string $key, mixed $default = null): mixed
     {
-        $options = $this->getOption($option, []);
-
-        if (!is_array($options)) {
+        $options = $this->getOption($option, array());
+        if (! is_array($options)) {
             return $default;
         }
 
-        return $options[$key] ?? $default;
+        return $options[ $key ] ?? $default;
     }
 
     /**
@@ -156,14 +149,12 @@ class Storage
      */
     public function updateOptionKey(string $option, string $key, mixed $value): bool
     {
-        $options = $this->getOption($option, []);
-
-        if (!is_array($options)) {
-            $options = [];
+        $options = $this->getOption($option, array());
+        if (! is_array($options)) {
+            $options = array();
         }
 
-        $options[$key] = $value;
-
+        $options[ $key ] = $value;
         return $this->updateOption($option, $options);
     }
 
@@ -177,14 +168,12 @@ class Storage
      */
     public function deleteOptionKey(string $option, string $key): bool
     {
-        $options = $this->getOption($option, []);
-
-        if (!is_array($options) || !isset($options[$key])) {
+        $options = $this->getOption($option, array());
+        if (! is_array($options) || ! isset($options[ $key ])) {
             return false;
         }
 
-        unset($options[$key]);
-
+        unset($options[ $key ]);
         return $this->updateOption($option, $options);
     }
 
@@ -204,20 +193,18 @@ class Storage
     public function getMeta(int $post_id, string $meta_key, mixed $default = null): mixed
     {
         $cache_key = 'post_meta_' . $post_id . '_' . $meta_key;
-
-        if ($this->use_cache && isset($this->cache[$cache_key])) {
-            return $this->cache[$cache_key];
+        if ($this->use_cache && isset($this->cache[ $cache_key ])) {
+            return $this->cache[ $cache_key ];
         }
 
         $value = get_post_meta($post_id, $meta_key, true);
-
         // Return default if empty.
         if ($value === '' || $value === false) {
             $value = $default;
         }
 
         if ($this->use_cache) {
-            $this->cache[$cache_key] = $value;
+            $this->cache[ $cache_key ] = $value;
         }
 
         return $value;
@@ -235,10 +222,9 @@ class Storage
     public function updateMeta(int $post_id, string $meta_key, mixed $value): bool
     {
         $result = update_post_meta($post_id, $meta_key, $value);
-
         // Update cache.
         if ($this->use_cache) {
-            $this->cache['post_meta_' . $post_id . '_' . $meta_key] = $value;
+            $this->cache[ 'post_meta_' . $post_id . '_' . $meta_key ] = $value;
         }
 
         return $result !== false;
@@ -255,10 +241,9 @@ class Storage
     public function deleteMeta(int $post_id, string $meta_key): bool
     {
         $result = delete_post_meta($post_id, $meta_key);
-
         // Clear cache.
         if ($this->use_cache) {
-            unset($this->cache['post_meta_' . $post_id . '_' . $meta_key]);
+            unset($this->cache[ 'post_meta_' . $post_id . '_' . $meta_key ]);
         }
 
         return $result;
@@ -272,19 +257,18 @@ class Storage
      * @param  array $meta_keys Optional array of specific keys to retrieve.
      * @return array            Associative array of meta values.
      */
-    public function getAllMeta(int $post_id, array $meta_keys = []): array
+    public function getAllMeta(int $post_id, array $meta_keys = array()): array
     {
         $all_meta = get_post_meta($post_id);
-        $result = [];
-
+        $result = array();
         foreach ($all_meta as $key => $values) {
             // Skip if specific keys requested and this isn't one.
-            if (!empty($meta_keys) && !in_array($key, $meta_keys, true)) {
+            if (! empty($meta_keys) && ! in_array($key, $meta_keys, true)) {
                 continue;
             }
 
             // get_post_meta returns array of values, we want single.
-            $result[$key] = maybe_unserialize($values[0] ?? '');
+            $result[ $key ] = maybe_unserialize($values[0] ?? '');
         }
 
         return $result;
@@ -306,20 +290,18 @@ class Storage
     public function getUserMeta(int $user_id, string $meta_key, mixed $default = null): mixed
     {
         $cache_key = 'user_meta_' . $user_id . '_' . $meta_key;
-
-        if ($this->use_cache && isset($this->cache[$cache_key])) {
-            return $this->cache[$cache_key];
+        if ($this->use_cache && isset($this->cache[ $cache_key ])) {
+            return $this->cache[ $cache_key ];
         }
 
         $value = get_user_meta($user_id, $meta_key, true);
-
         // Return default if empty.
         if ($value === '' || $value === false) {
             $value = $default;
         }
 
         if ($this->use_cache) {
-            $this->cache[$cache_key] = $value;
+            $this->cache[ $cache_key ] = $value;
         }
 
         return $value;
@@ -337,10 +319,9 @@ class Storage
     public function updateUserMeta(int $user_id, string $meta_key, mixed $value): bool
     {
         $result = update_user_meta($user_id, $meta_key, $value);
-
         // Update cache.
         if ($this->use_cache) {
-            $this->cache['user_meta_' . $user_id . '_' . $meta_key] = $value;
+            $this->cache[ 'user_meta_' . $user_id . '_' . $meta_key ] = $value;
         }
 
         return $result !== false;
@@ -357,10 +338,9 @@ class Storage
     public function deleteUserMeta(int $user_id, string $meta_key): bool
     {
         $result = delete_user_meta($user_id, $meta_key);
-
         // Clear cache.
         if ($this->use_cache) {
-            unset($this->cache['user_meta_' . $user_id . '_' . $meta_key]);
+            unset($this->cache[ 'user_meta_' . $user_id . '_' . $meta_key ]);
         }
 
         return $result;
@@ -374,19 +354,18 @@ class Storage
      * @param  array $meta_keys Optional array of specific keys to retrieve.
      * @return array            Associative array of meta values.
      */
-    public function getAllUserMeta(int $user_id, array $meta_keys = []): array
+    public function getAllUserMeta(int $user_id, array $meta_keys = array()): array
     {
         $all_meta = get_user_meta($user_id);
-        $result = [];
-
+        $result = array();
         foreach ($all_meta as $key => $values) {
             // Skip if specific keys requested and this isn't one.
-            if (!empty($meta_keys) && !in_array($key, $meta_keys, true)) {
+            if (! empty($meta_keys) && ! in_array($key, $meta_keys, true)) {
                 continue;
             }
 
             // get_user_meta returns array of values, we want single.
-            $result[$key] = maybe_unserialize($values[0] ?? '');
+            $result[ $key ] = maybe_unserialize($values[0] ?? '');
         }
 
         return $result;
@@ -408,20 +387,18 @@ class Storage
     public function getTermMeta(int $term_id, string $meta_key, mixed $default = null): mixed
     {
         $cache_key = 'term_meta_' . $term_id . '_' . $meta_key;
-
-        if ($this->use_cache && isset($this->cache[$cache_key])) {
-            return $this->cache[$cache_key];
+        if ($this->use_cache && isset($this->cache[ $cache_key ])) {
+            return $this->cache[ $cache_key ];
         }
 
         $value = get_term_meta($term_id, $meta_key, true);
-
         // Return default if empty.
         if ($value === '' || $value === false) {
             $value = $default;
         }
 
         if ($this->use_cache) {
-            $this->cache[$cache_key] = $value;
+            $this->cache[ $cache_key ] = $value;
         }
 
         return $value;
@@ -439,10 +416,9 @@ class Storage
     public function updateTermMeta(int $term_id, string $meta_key, mixed $value): bool
     {
         $result = update_term_meta($term_id, $meta_key, $value);
-
         // Update cache.
         if ($this->use_cache) {
-            $this->cache['term_meta_' . $term_id . '_' . $meta_key] = $value;
+            $this->cache[ 'term_meta_' . $term_id . '_' . $meta_key ] = $value;
         }
 
         return $result !== false;
@@ -459,10 +435,9 @@ class Storage
     public function deleteTermMeta(int $term_id, string $meta_key): bool
     {
         $result = delete_term_meta($term_id, $meta_key);
-
         // Clear cache.
         if ($this->use_cache) {
-            unset($this->cache['term_meta_' . $term_id . '_' . $meta_key]);
+            unset($this->cache[ 'term_meta_' . $term_id . '_' . $meta_key ]);
         }
 
         return $result;
@@ -484,20 +459,18 @@ class Storage
     public function getCommentMeta(int $comment_id, string $meta_key, mixed $default = null): mixed
     {
         $cache_key = 'comment_meta_' . $comment_id . '_' . $meta_key;
-
-        if ($this->use_cache && isset($this->cache[$cache_key])) {
-            return $this->cache[$cache_key];
+        if ($this->use_cache && isset($this->cache[ $cache_key ])) {
+            return $this->cache[ $cache_key ];
         }
 
         $value = get_comment_meta($comment_id, $meta_key, true);
-
         // Return default if empty.
         if ($value === '' || $value === false) {
             $value = $default;
         }
 
         if ($this->use_cache) {
-            $this->cache[$cache_key] = $value;
+            $this->cache[ $cache_key ] = $value;
         }
 
         return $value;
@@ -515,10 +488,9 @@ class Storage
     public function updateCommentMeta(int $comment_id, string $meta_key, mixed $value): bool
     {
         $result = update_comment_meta($comment_id, $meta_key, $value);
-
         // Update cache.
         if ($this->use_cache) {
-            $this->cache['comment_meta_' . $comment_id . '_' . $meta_key] = $value;
+            $this->cache[ 'comment_meta_' . $comment_id . '_' . $meta_key ] = $value;
         }
 
         return $result !== false;
@@ -535,10 +507,9 @@ class Storage
     public function deleteCommentMeta(int $comment_id, string $meta_key): bool
     {
         $result = delete_comment_meta($comment_id, $meta_key);
-
         // Clear cache.
         if ($this->use_cache) {
-            unset($this->cache['comment_meta_' . $comment_id . '_' . $meta_key]);
+            unset($this->cache[ 'comment_meta_' . $comment_id . '_' . $meta_key ]);
         }
 
         return $result;
@@ -558,13 +529,13 @@ class Storage
     public function clearCache(?string $prefix = null): void
     {
         if ($prefix === null) {
-            $this->cache = [];
+            $this->cache = array();
             return;
         }
 
         foreach ($this->cache as $key => $value) {
             if (strpos($key, $prefix) === 0) {
-                unset($this->cache[$key]);
+                unset($this->cache[ $key ]);
             }
         }
     }
@@ -579,8 +550,7 @@ class Storage
     public function setUseCache(bool $enable): void
     {
         $this->use_cache = $enable;
-
-        if (!$enable) {
+        if (! $enable) {
             $this->clearCache();
         }
     }
@@ -611,7 +581,6 @@ class Storage
     public function getTransient(string $transient, mixed $default = null): mixed
     {
         $value = get_transient($transient);
-
         if ($value === false) {
             return $default;
         }

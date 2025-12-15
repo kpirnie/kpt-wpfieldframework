@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Framework - Main bootstrap and facade class
  *
@@ -20,7 +21,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class Framework
  *
@@ -38,7 +38,6 @@ final class Framework
      * @var Framework|null
      */
     private static ?Framework $instance = null;
-
     /**
      * Framework version.
      *
@@ -46,23 +45,20 @@ final class Framework
      * @var string
      */
     public const VERSION = '1.0.0';
-
     /**
      * Registered options pages.
      *
      * @since 1.0.0
      * @var array<string, OptionsPage>
      */
-    private array $options_pages = [];
-
+    private array $options_pages = array();
     /**
      * Registered meta boxes.
      *
      * @since 1.0.0
      * @var array<string, MetaBox>
      */
-    private array $meta_boxes = [];
-
+    private array $meta_boxes = array();
     /**
      * Field types registry instance.
      *
@@ -70,7 +66,6 @@ final class Framework
      * @var FieldTypes|null
      */
     private ?FieldTypes $field_types = null;
-
     /**
      * Storage handler instance.
      *
@@ -78,7 +73,6 @@ final class Framework
      * @var Storage|null
      */
     private ?Storage $storage = null;
-
     /**
      * Block generator instance.
      *
@@ -86,7 +80,6 @@ final class Framework
      * @var BlockGenerator|null
      */
     private ?BlockGenerator $block_generator = null;
-
     /**
      * Base URL for framework assets.
      *
@@ -94,7 +87,6 @@ final class Framework
      * @var string
      */
     private string $assets_url = '';
-
     /**
      * Base path for framework assets.
      *
@@ -102,7 +94,6 @@ final class Framework
      * @var string
      */
     private string $assets_path = '';
-
     /**
      * Whether the framework has been initialized.
      *
@@ -110,7 +101,6 @@ final class Framework
      * @var bool
      */
     private bool $initialized = false;
-
     /**
      * Private constructor to enforce singleton.
      *
@@ -181,17 +171,13 @@ final class Framework
         // Set assets paths, with fallback to package location.
         $this->assets_url = $assets_url ?: $this->detectAssetsUrl();
         $this->assets_path = $assets_path ?: $this->detectAssetsPath();
-
         // Initialize core components.
         $this->field_types = new FieldTypes();
         $this->storage = new Storage();
         $this->block_generator = new BlockGenerator($this->field_types);
-
         // Register WordPress hooks.
         $this->registerHooks();
-
         $this->initialized = true;
-
         return $this;
     }
 
@@ -204,34 +190,26 @@ final class Framework
     private function registerHooks(): void
     {
         // Enqueue admin assets.
-        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssets']);
-
+        add_action('admin_enqueue_scripts', array( $this, 'enqueueAdminAssets' ));
         // Register meta boxes.
-        add_action('add_meta_boxes', [$this, 'registerMetaBoxes']);
-
+        add_action('add_meta_boxes', array( $this, 'registerMetaBoxes' ));
         // Save meta box data.
-        add_action('save_post', [$this, 'saveMetaBoxes'], 10, 2);
-
+        add_action('save_post', array( $this, 'saveMetaBoxes' ), 10, 2);
         // Save user meta.
-        add_action('personal_options_update', [$this, 'saveUserMeta']);
-        add_action('edit_user_profile_update', [$this, 'saveUserMeta']);
-
+        add_action('personal_options_update', array( $this, 'saveUserMeta' ));
+        add_action('edit_user_profile_update', array( $this, 'saveUserMeta' ));
         // Register options pages.
-        add_action('admin_menu', [$this, 'registerOptionsPages']);
-
+        add_action('admin_menu', array( $this, 'registerOptionsPages' ));
         // Register settings.
-        add_action('admin_init', [$this, 'registerSettings']);
-
+        add_action('admin_init', array( $this, 'registerSettings' ));
         // Initialize blocks.
-        add_action('init', [$this, 'registerBlocks']);
-
+        add_action('init', array( $this, 'registerBlocks' ));
         // Add user profile fields.
-        add_action('show_user_profile', [$this, 'renderUserMetaFields']);
-        add_action('edit_user_profile', [$this, 'renderUserMetaFields']);
-
+        add_action('show_user_profile', array( $this, 'renderUserMetaFields' ));
+        add_action('edit_user_profile', array( $this, 'renderUserMetaFields' ));
         // Nav menu item custom fields.
-        add_action('wp_nav_menu_item_custom_fields', [$this, 'renderNavMenuFields'], 10, 5);
-        add_action('wp_update_nav_menu_item', [$this, 'saveNavMenuFields'], 10, 3);
+        add_action('wp_nav_menu_item_custom_fields', array( $this, 'renderNavMenuFields' ), 10, 5);
+        add_action('wp_update_nav_menu_item', array( $this, 'saveNavMenuFields' ), 10, 3);
     }
 
     /**
@@ -246,7 +224,6 @@ final class Framework
     private function detectAssetsUrl(): string
     {
         $package_dir = dirname(__DIR__);
-
         // Check if we're in a plugin.
         if (strpos($package_dir, WP_PLUGIN_DIR) !== false) {
             $relative = str_replace(WP_PLUGIN_DIR, '', $package_dir);
@@ -284,55 +261,43 @@ final class Framework
     public function enqueueAdminAssets(string $hook_suffix): void
     {
         // Only load on relevant admin pages.
-        $dominated_screens = ['post.php', 'post-new.php', 'user-edit.php', 'profile.php', 'nav-menus.php'];
+        $dominated_screens = array( 'post.php', 'post-new.php', 'user-edit.php', 'profile.php', 'nav-menus.php' );
         $is_options_page = $this->isFrameworkOptionsPage($hook_suffix);
-
-        if (!in_array($hook_suffix, $dominated_screens, true) && !$is_options_page) {
+        if (! in_array($hook_suffix, $dominated_screens, true) && ! $is_options_page) {
             return;
         }
 
         // Enqueue WordPress media scripts for file/image uploads.
         wp_enqueue_media();
-
         // Enqueue WordPress color picker.
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
-
         // Enqueue WordPress date picker.
         wp_enqueue_script('jquery-ui-datepicker');
-        wp_enqueue_style(
-            'jquery-ui-datepicker-style',
-            '//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css',
-            [],
-            '1.13.2'
-        );
-
+        wp_enqueue_style('jquery-ui-datepicker-style', '//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css', array(), '1.13.2');
         // Enqueue code editor if available (WP 4.9+).
         if (function_exists('wp_enqueue_code_editor')) {
-            wp_enqueue_code_editor(['type' => 'text/html']);
+            wp_enqueue_code_editor(array( 'type' => 'text/html' ));
         }
 
         // Framework admin script.
         $script_path = $this->assets_path . '/js/wsf-admin.js';
         if (file_exists($script_path)) {
-            wp_enqueue_script(
-                'kp-wsf-admin',
-                $this->assets_url . '/js/wsf-admin.js',
-                ['jquery', 'wp-color-picker', 'jquery-ui-datepicker', 'jquery-ui-sortable'],
-                self::VERSION,
-                true
-            );
-
+            wp_enqueue_script('kp-wsf-admin', $this->assets_url . '/js/wsf-admin.js', array( 'jquery', 'wp-color-picker', 'jquery-ui-datepicker', 'jquery-ui-sortable' ), self::VERSION, true);
             // Localize script with framework data.
-            wp_localize_script('kp-wsf-admin', 'kpWsfAdmin', [
-                'ajaxUrl' => admin_url('admin-ajax.php'),
-                'nonce'   => wp_create_nonce('kp_wsf_nonce'),
-                'i18n'    => [
-                    'confirmDelete' => __('Are you sure you want to remove this item?', 'kp-wsf'),
-                    'mediaTitle'    => __('Select or Upload', 'kp-wsf'),
-                    'mediaButton'   => __('Use this file', 'kp-wsf'),
-                ],
-            ]);
+            wp_localize_script(
+                'kp-wsf-admin',
+                'kpWsfAdmin',
+                array(
+                    'ajaxUrl' => admin_url('admin-ajax.php'),
+                    'nonce'   => wp_create_nonce('kp_wsf_nonce'),
+                    'i18n'    => array(
+                        'confirmDelete' => __('Are you sure you want to remove this item?', 'kp-wsf'),
+                        'mediaTitle'    => __('Select or Upload', 'kp-wsf'),
+                        'mediaButton'   => __('Use this file', 'kp-wsf'),
+                    ),
+                )
+            );
         }
     }
 
@@ -364,8 +329,7 @@ final class Framework
     public function addOptionsPage(array $config): OptionsPage
     {
         $page = new OptionsPage($config, $this->field_types, $this->storage);
-        $this->options_pages[$page->getMenuSlug()] = $page;
-
+        $this->options_pages[ $page->getMenuSlug() ] = $page;
         return $page;
     }
 
@@ -379,10 +343,9 @@ final class Framework
     public function addMetaBox(array $config): MetaBox
     {
         $meta_box = new MetaBox($config, $this->field_types, $this->storage);
-        $this->meta_boxes[$meta_box->getId()] = $meta_box;
-
+        $this->meta_boxes[ $meta_box->getId() ] = $meta_box;
         // Register block if configured.
-        if (!empty($config['create_block']) && $config['create_block'] === true) {
+        if (! empty($config['create_block']) && $config['create_block'] === true) {
             $this->block_generator->registerFromMetaBox($meta_box);
         }
 
@@ -462,7 +425,7 @@ final class Framework
         }
 
         // Verify user can edit this post.
-        if (!current_user_can('edit_post', $post_id)) {
+        if (! current_user_can('edit_post', $post_id)) {
             return;
         }
 
@@ -488,7 +451,7 @@ final class Framework
      */
     public function saveUserMeta(int $user_id): void
     {
-        if (!current_user_can('edit_user', $user_id)) {
+        if (! current_user_can('edit_user', $user_id)) {
             return;
         }
 

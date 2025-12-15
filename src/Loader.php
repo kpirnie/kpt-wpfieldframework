@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Loader - Autoloader and initialization helper
  *
@@ -18,7 +19,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class Loader
  *
@@ -36,7 +36,6 @@ final class Loader
      * @var bool
      */
     private static bool $autoloader_registered = false;
-
     /**
      * The namespace prefix for framework classes.
      *
@@ -44,7 +43,6 @@ final class Loader
      * @var string
      */
     private const NAMESPACE_PREFIX = 'KP\\WPStarterFramework\\';
-
     /**
      * Register the PSR-4 autoloader.
      *
@@ -61,7 +59,7 @@ final class Loader
             return;
         }
 
-        spl_autoload_register([self::class, 'autoload']);
+        spl_autoload_register(array( self::class, 'autoload' ));
         self::$autoloader_registered = true;
     }
 
@@ -78,7 +76,6 @@ final class Loader
     {
         // Check if the class uses our namespace prefix.
         $prefix_length = strlen(self::NAMESPACE_PREFIX);
-
         if (strncmp(self::NAMESPACE_PREFIX, $class, $prefix_length) !== 0) {
             // Not our namespace, bail out.
             return;
@@ -86,11 +83,9 @@ final class Loader
 
         // Get the relative class name (without namespace prefix).
         $relative_class = substr($class, $prefix_length);
-
         // Build the file path.
         // Replace namespace separators with directory separators.
         $file = dirname(__DIR__) . '/src/' . str_replace('\\', '/', $relative_class) . '.php';
-
         // If the file exists, require it.
         if (file_exists($file)) {
             require_once $file;
@@ -111,21 +106,19 @@ final class Loader
      *                        - 'assets_path': Override the auto-detected assets path.
      * @return Framework      The initialized Framework instance.
      */
-    public static function bootstrap(array $options = []): Framework
+    public static function bootstrap(array $options = array()): Framework
     {
         // Register autoloader if not using Composer.
-        if (!self::$autoloader_registered && !class_exists(Framework::class, false)) {
+        if (! self::$autoloader_registered && ! class_exists(Framework::class, false)) {
             self::register();
         }
 
         // Get the Framework singleton.
         $framework = Framework::getInstance();
-
         // Initialize if not already done.
-        if (!$framework->isInitialized()) {
+        if (! $framework->isInitialized()) {
             $assets_url = $options['assets_url'] ?? '';
             $assets_path = $options['assets_path'] ?? '';
-
             $framework->init($assets_url, $assets_path);
         }
 
@@ -145,7 +138,6 @@ final class Loader
     {
         $plugin_dir = plugin_dir_path($plugin_file);
         $plugin_url = plugin_dir_url($plugin_file);
-
         // Check if assets exist in the plugin root.
         if (is_dir($plugin_dir . 'assets')) {
             $assets_path = $plugin_dir . 'assets';
@@ -156,10 +148,12 @@ final class Loader
             $assets_url = $plugin_url . 'vendor/kevinpirnie/kp-wp-starter-framework/assets';
         }
 
-        return self::bootstrap([
-            'assets_url'  => $assets_url,
-            'assets_path' => $assets_path,
-        ]);
+        return self::bootstrap(
+            array(
+                'assets_url'  => $assets_url,
+                'assets_path' => $assets_path,
+            )
+        );
     }
 
     /**
@@ -176,9 +170,8 @@ final class Loader
     {
         $theme_dir = get_stylesheet_directory();
         $theme_url = get_stylesheet_directory_uri();
-
         // Determine assets location.
-        if (!empty($subfolder)) {
+        if (! empty($subfolder)) {
             // Use specified subfolder.
             $assets_path = $theme_dir . '/' . trim($subfolder, '/') . '/assets';
             $assets_url = $theme_url . '/' . trim($subfolder, '/') . '/assets';
@@ -196,10 +189,12 @@ final class Loader
             $assets_url = $theme_url . '/assets';
         }
 
-        return self::bootstrap([
-            'assets_url'  => $assets_url,
-            'assets_path' => $assets_path,
-        ]);
+        return self::bootstrap(
+            array(
+                'assets_url'  => $assets_url,
+                'assets_path' => $assets_path,
+            )
+        );
     }
 
     /**
@@ -234,40 +229,29 @@ final class Loader
      * @param  string $min_php_version Minimum PHP version required.
      * @return array                   Array with 'valid' bool and 'errors' array.
      */
-    public static function checkRequirements(
-        string $min_wp_version = '6.8',
-        string $min_php_version = '8.2'
-    ): array {
-        $errors = [];
-
+    public static function checkRequirements(string $min_wp_version = '6.8', string $min_php_version = '8.2'): array
+    {
+        $errors = array();
         // Check PHP version.
         if (version_compare(PHP_VERSION, $min_php_version, '<')) {
-            $errors[] = sprintf(
-                'KP WP Starter Framework requires PHP %s or higher. You are running PHP %s.',
-                $min_php_version,
-                PHP_VERSION
-            );
+            $errors[] = sprintf('KP WP Starter Framework requires PHP %s or higher. You are running PHP %s.', $min_php_version, PHP_VERSION);
         }
 
         // Check if WordPress is loaded.
-        if (!function_exists('get_bloginfo')) {
+        if (! function_exists('get_bloginfo')) {
             $errors[] = 'KP WP Starter Framework requires WordPress to be loaded.';
         } else {
             // Check WordPress version.
             $wp_version = get_bloginfo('version');
             if (version_compare($wp_version, $min_wp_version, '<')) {
-                $errors[] = sprintf(
-                    'KP WP Starter Framework requires WordPress %s or higher. You are running WordPress %s.',
-                    $min_wp_version,
-                    $wp_version
-                );
+                $errors[] = sprintf('KP WP Starter Framework requires WordPress %s or higher. You are running WordPress %s.', $min_wp_version, $wp_version);
             }
         }
 
-        return [
+        return array(
             'valid'  => empty($errors),
             'errors' => $errors,
-        ];
+        );
     }
 
     /**
@@ -282,16 +266,20 @@ final class Loader
      */
     public static function displayRequirementErrors(array $errors): void
     {
-        add_action('admin_notices', function () use ($errors) {
-            echo '<div class="notice notice-error">';
-            echo '<p><strong>KP WP Starter Framework Error:</strong></p>';
-            echo '<ul>';
-            foreach ($errors as $error) {
-                echo '<li>' . esc_html($error) . '</li>';
+        add_action(
+            'admin_notices',
+            function () use ($errors) {
+
+                echo '<div class="notice notice-error">';
+                echo '<p><strong>KP WP Starter Framework Error:</strong></p>';
+                echo '<ul>';
+                foreach ($errors as $error) {
+                    echo '<li>' . esc_html($error) . '</li>';
+                }
+                echo '</ul>';
+                echo '</div>';
             }
-            echo '</ul>';
-            echo '</div>';
-        });
+        );
     }
 
     /**
@@ -304,11 +292,10 @@ final class Loader
      * @param  array $options Optional configuration options passed to bootstrap().
      * @return Framework|null The Framework instance or null if requirements not met.
      */
-    public static function init(array $options = []): ?Framework
+    public static function init(array $options = array()): ?Framework
     {
         $requirements = self::checkRequirements();
-
-        if (!$requirements['valid']) {
+        if (! $requirements['valid']) {
             self::displayRequirementErrors($requirements['errors']);
             return null;
         }

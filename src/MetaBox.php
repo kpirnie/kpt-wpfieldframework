@@ -1,4 +1,5 @@
 <?php
+
 /**
  * MetaBox - Meta box builder
  *
@@ -18,7 +19,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class MetaBox
  *
@@ -36,7 +36,6 @@ class MetaBox
      * @var array
      */
     private array $config;
-
     /**
      * Field types instance.
      *
@@ -44,7 +43,6 @@ class MetaBox
      * @var FieldTypes
      */
     private FieldTypes $field_types;
-
     /**
      * Storage instance.
      *
@@ -52,34 +50,31 @@ class MetaBox
      * @var Storage
      */
     private Storage $storage;
-
     /**
      * Registered fields.
      *
      * @since 1.0.0
      * @var array
      */
-    private array $fields = [];
-
+    private array $fields = array();
     /**
      * Default configuration values.
      *
      * @since 1.0.0
      * @var array
      */
-    private array $defaults = [
+    private array $defaults = array(
         'id'           => '',
         'title'        => 'Meta Box',
-        'post_types'   => ['post'],
+        'post_types'   => array( 'post' ),
         'context'      => 'normal',
         'priority'     => 'default',
-        'fields'       => [],
+        'fields'       => array(),
         'user_meta'    => false,
         'nav_menu'     => false,
         'create_block' => false,
-        'block_config' => [],
-    ];
-
+        'block_config' => array(),
+    );
     /**
      * Constructor.
      *
@@ -93,14 +88,13 @@ class MetaBox
         $this->config = wp_parse_args($config, $this->defaults);
         $this->field_types = $field_types;
         $this->storage = $storage;
-
         // Ensure ID is set.
         if (empty($this->config['id'])) {
             $this->config['id'] = sanitize_key($this->config['title']);
         }
 
         // Process fields from config.
-        if (!empty($this->config['fields'])) {
+        if (! empty($this->config['fields'])) {
             $this->fields = $this->config['fields'];
         }
     }
@@ -215,14 +209,7 @@ class MetaBox
     public function register(): void
     {
         foreach ($this->getPostTypes() as $post_type) {
-            add_meta_box(
-                $this->config['id'],
-                $this->config['title'],
-                [$this, 'render'],
-                $post_type,
-                $this->config['context'],
-                $this->config['priority']
-            );
+            add_meta_box($this->config['id'], $this->config['title'], array( $this, 'render' ), $post_type, $this->config['context'], $this->config['priority']);
         }
     }
 
@@ -237,22 +224,17 @@ class MetaBox
     {
         // Output nonce field.
         wp_nonce_field($this->config['id'] . '_nonce_action', $this->config['id'] . '_nonce');
-
         echo '<div class="kp-wsf-meta-box">';
-
         foreach ($this->fields as $field) {
             // Get current value.
             $value = $this->storage->getMeta($post->ID, $field['id']);
-
             // Prefix field name for meta storage.
             $field['name'] = $field['id'];
-
             // Render field row.
             echo $this->field_types->renderRow($field, $value, 'meta');
         }
 
         echo '</div>';
-
         // Add inline styles for meta box layout.
         $this->outputInlineStyles();
     }
@@ -269,8 +251,7 @@ class MetaBox
         // Verify nonce.
         $nonce_name = $this->config['id'] . '_nonce';
         $nonce_action = $this->config['id'] . '_nonce_action';
-
-        if (!isset($_POST[$nonce_name]) || !wp_verify_nonce($_POST[$nonce_name], $nonce_action)) {
+        if (! isset($_POST[ $nonce_name ]) || ! wp_verify_nonce($_POST[ $nonce_name ], $nonce_action)) {
             return;
         }
 
@@ -282,31 +263,26 @@ class MetaBox
         // Check user permissions.
         $post_type = get_post_type($post_id);
         $post_type_obj = get_post_type_object($post_type);
-
-        if (!current_user_can($post_type_obj->cap->edit_post, $post_id)) {
+        if (! current_user_can($post_type_obj->cap->edit_post, $post_id)) {
             return;
         }
 
         $sanitizer = new Sanitizer();
-
         // Save each field.
         foreach ($this->fields as $field) {
             $field_id = $field['id'];
-
             // Skip layout-only fields.
-            $layout_types = ['heading', 'separator', 'html', 'message'];
+            $layout_types = array( 'heading', 'separator', 'html', 'message' );
             if (in_array($field['type'] ?? 'text', $layout_types, true)) {
                 continue;
             }
 
             // Get submitted value.
-            $value = $_POST[$field_id] ?? null;
-
+            $value = $_POST[ $field_id ] ?? null;
             // Sanitize value.
             $sanitized_value = $sanitizer->sanitize($value, $field);
-
             // Update or delete meta.
-            if ($sanitized_value !== null && $sanitized_value !== '' && $sanitized_value !== []) {
+            if ($sanitized_value !== null && $sanitized_value !== '' && $sanitized_value !== array()) {
                 $this->storage->updateMeta($post_id, $field_id, $sanitized_value);
             } else {
                 $this->storage->deleteMeta($post_id, $field_id);
@@ -325,17 +301,13 @@ class MetaBox
     {
         // Output nonce field.
         wp_nonce_field($this->config['id'] . '_nonce_action', $this->config['id'] . '_nonce');
-
         echo '<h2>' . esc_html($this->config['title']) . '</h2>';
         echo '<table class="form-table kp-wsf-user-meta">';
-
         foreach ($this->fields as $field) {
             // Get current value from user meta.
             $value = $this->storage->getUserMeta($user->ID, $field['id']);
-
             // Prefix field name.
             $field['name'] = $field['id'];
-
             // Render field row in options context (table format).
             echo $this->field_types->renderRow($field, $value, 'options');
         }
@@ -355,36 +327,31 @@ class MetaBox
         // Verify nonce.
         $nonce_name = $this->config['id'] . '_nonce';
         $nonce_action = $this->config['id'] . '_nonce_action';
-
-        if (!isset($_POST[$nonce_name]) || !wp_verify_nonce($_POST[$nonce_name], $nonce_action)) {
+        if (! isset($_POST[ $nonce_name ]) || ! wp_verify_nonce($_POST[ $nonce_name ], $nonce_action)) {
             return;
         }
 
         // Check user permissions.
-        if (!current_user_can('edit_user', $user_id)) {
+        if (! current_user_can('edit_user', $user_id)) {
             return;
         }
 
         $sanitizer = new Sanitizer();
-
         // Save each field.
         foreach ($this->fields as $field) {
             $field_id = $field['id'];
-
             // Skip layout-only fields.
-            $layout_types = ['heading', 'separator', 'html', 'message'];
+            $layout_types = array( 'heading', 'separator', 'html', 'message' );
             if (in_array($field['type'] ?? 'text', $layout_types, true)) {
                 continue;
             }
 
             // Get submitted value.
-            $value = $_POST[$field_id] ?? null;
-
+            $value = $_POST[ $field_id ] ?? null;
             // Sanitize value.
             $sanitized_value = $sanitizer->sanitize($value, $field);
-
             // Update or delete user meta.
-            if ($sanitized_value !== null && $sanitized_value !== '' && $sanitized_value !== []) {
+            if ($sanitized_value !== null && $sanitized_value !== '' && $sanitized_value !== array()) {
                 $this->storage->updateUserMeta($user_id, $field_id, $sanitized_value);
             } else {
                 $this->storage->deleteUserMeta($user_id, $field_id);
@@ -404,29 +371,26 @@ class MetaBox
     {
         // Output nonce field (only once per menu).
         static $nonce_output = false;
-        if (!$nonce_output) {
+        if (! $nonce_output) {
             wp_nonce_field($this->config['id'] . '_nonce_action', $this->config['id'] . '_nonce');
             $nonce_output = true;
         }
 
         echo '<div class="kp-wsf-nav-menu-fields">';
         echo '<p class="description kp-wsf-nav-menu-title">' . esc_html($this->config['title']) . '</p>';
-
         foreach ($this->fields as $field) {
             // Get current value from post meta (nav menu items are posts).
             $value = $this->storage->getMeta($item_id, $field['id']);
-
             // Prefix field name and ID with item ID for uniqueness.
             $field['id'] = $field['id'] . '_' . $item_id;
             $field['name'] = $field['id'];
-
             // Render field.
             echo '<div class="kp-wsf-nav-menu-field">';
-            if (!empty($field['label'])) {
+            if (! empty($field['label'])) {
                 echo '<label for="' . esc_attr($field['id']) . '">' . esc_html($field['label']) . '</label>';
             }
             echo $this->field_types->render($field, $value);
-            if (!empty($field['description'])) {
+            if (! empty($field['description'])) {
                 echo '<span class="description">' . esc_html($field['description']) . '</span>';
             }
             echo '</div>';
@@ -447,32 +411,27 @@ class MetaBox
         // Verify nonce.
         $nonce_name = $this->config['id'] . '_nonce';
         $nonce_action = $this->config['id'] . '_nonce_action';
-
-        if (!isset($_POST[$nonce_name]) || !wp_verify_nonce($_POST[$nonce_name], $nonce_action)) {
+        if (! isset($_POST[ $nonce_name ]) || ! wp_verify_nonce($_POST[ $nonce_name ], $nonce_action)) {
             return;
         }
 
         $sanitizer = new Sanitizer();
-
         // Save each field.
         foreach ($this->fields as $field) {
             $field_id = $field['id'] . '_' . $menu_item_id;
             $meta_key = $field['id'];
-
             // Skip layout-only fields.
-            $layout_types = ['heading', 'separator', 'html', 'message'];
+            $layout_types = array( 'heading', 'separator', 'html', 'message' );
             if (in_array($field['type'] ?? 'text', $layout_types, true)) {
                 continue;
             }
 
             // Get submitted value.
-            $value = $_POST[$field_id] ?? null;
-
+            $value = $_POST[ $field_id ] ?? null;
             // Sanitize value.
             $sanitized_value = $sanitizer->sanitize($value, $field);
-
             // Update or delete meta.
-            if ($sanitized_value !== null && $sanitized_value !== '' && $sanitized_value !== []) {
+            if ($sanitized_value !== null && $sanitized_value !== '' && $sanitized_value !== array()) {
                 $this->storage->updateMeta($menu_item_id, $meta_key, $sanitized_value);
             } else {
                 $this->storage->deleteMeta($menu_item_id, $meta_key);
@@ -531,7 +490,6 @@ class MetaBox
     private function outputInlineStyles(): void
     {
         static $styles_output = false;
-
         if ($styles_output) {
             return;
         }

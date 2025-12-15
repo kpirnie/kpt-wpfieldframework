@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Sanitizer - Sanitization and validation utilities
  *
@@ -18,7 +19,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class Sanitizer
  *
@@ -40,9 +40,8 @@ class Sanitizer
     public function sanitize(mixed $value, array $field): mixed
     {
         $type = $field['type'] ?? 'text';
-
         // Check for custom sanitize callback.
-        if (!empty($field['sanitize']) && is_callable($field['sanitize'])) {
+        if (! empty($field['sanitize']) && is_callable($field['sanitize'])) {
             return call_user_func($field['sanitize'], $value, $field);
         }
 
@@ -87,7 +86,7 @@ class Sanitizer
     public function sanitizeUnknown(mixed $value): mixed
     {
         if (is_array($value)) {
-            return array_map([$this, 'sanitizeUnknown'], $value);
+            return array_map(array( $this, 'sanitizeUnknown' ), $value);
         }
 
         if (is_string($value)) {
@@ -114,7 +113,7 @@ class Sanitizer
      */
     private function sanitizeText(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -130,7 +129,7 @@ class Sanitizer
      */
     private function sanitizeTextarea(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -146,7 +145,7 @@ class Sanitizer
      */
     private function sanitizeEmail(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -162,7 +161,7 @@ class Sanitizer
      */
     private function sanitizeUrl(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -187,7 +186,6 @@ class Sanitizer
         // Determine if float or int.
         $step = $field['step'] ?? 1;
         $is_float = is_float($step) || strpos((string) $step, '.') !== false;
-
         if ($is_float) {
             $value = (float) $value;
         } else {
@@ -216,7 +214,7 @@ class Sanitizer
      */
     private function sanitizeTel(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -235,7 +233,7 @@ class Sanitizer
      */
     private function sanitizePassword(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -252,14 +250,13 @@ class Sanitizer
      */
     private function sanitizeDate(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
         $value = sanitize_text_field($value);
-
         // Validate date format (Y-m-d).
-        if (!empty($value) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        if (! empty($value) && ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
             // Try to parse and reformat.
             $timestamp = strtotime($value);
             if ($timestamp !== false) {
@@ -280,14 +277,13 @@ class Sanitizer
      */
     private function sanitizeDatetime(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
         $value = sanitize_text_field($value);
-
         // Validate datetime-local format (Y-m-d\TH:i).
-        if (!empty($value) && !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/', $value)) {
+        if (! empty($value) && ! preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/', $value)) {
             // Try to parse and reformat.
             $timestamp = strtotime($value);
             if ($timestamp !== false) {
@@ -308,14 +304,13 @@ class Sanitizer
      */
     private function sanitizeTime(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
         $value = sanitize_text_field($value);
-
         // Validate time format (H:i or H:i:s).
-        if (!empty($value) && !preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value)) {
+        if (! empty($value) && ! preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value)) {
             return '';
         }
 
@@ -331,14 +326,13 @@ class Sanitizer
      */
     private function sanitizeWeek(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
         $value = sanitize_text_field($value);
-
         // Validate week format (Y-Www).
-        if (!empty($value) && !preg_match('/^\d{4}-W\d{2}$/', $value)) {
+        if (! empty($value) && ! preg_match('/^\d{4}-W\d{2}$/', $value)) {
             return '';
         }
 
@@ -354,14 +348,13 @@ class Sanitizer
      */
     private function sanitizeMonth(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
         $value = sanitize_text_field($value);
-
         // Validate month format (Y-m).
-        if (!empty($value) && !preg_match('/^\d{4}-\d{2}$/', $value)) {
+        if (! empty($value) && ! preg_match('/^\d{4}-\d{2}$/', $value)) {
             return '';
         }
 
@@ -379,13 +372,11 @@ class Sanitizer
     private function sanitizeSelect(mixed $value, array $field): string
     {
         $value = sanitize_text_field((string) $value);
-
         // Validate against available options.
-        $options = $field['options'] ?? [];
-
-        if (!empty($options)) {
+        $options = $field['options'] ?? array();
+        if (! empty($options)) {
             // Flatten optgroups if present.
-            $valid_values = [];
+            $valid_values = array();
             foreach ($options as $opt_value => $opt_label) {
                 if (is_array($opt_label)) {
                     // Optgroup.
@@ -396,7 +387,7 @@ class Sanitizer
             }
 
             // Check if value is valid.
-            if (!in_array($value, array_map('strval', $valid_values), true) && $value !== '') {
+            if (! in_array($value, array_map('strval', $valid_values), true) && $value !== '') {
                 return $field['default'] ?? '';
             }
         }
@@ -414,17 +405,15 @@ class Sanitizer
      */
     private function sanitizeMultiSelect(mixed $value, array $field): array
     {
-        if (!is_array($value)) {
-            return [];
+        if (! is_array($value)) {
+            return array();
         }
 
-        $options = $field['options'] ?? [];
+        $options = $field['options'] ?? array();
         $valid_values = array_map('strval', array_keys($options));
-
-        $sanitized = [];
+        $sanitized = array();
         foreach ($value as $item) {
             $item = sanitize_text_field((string) $item);
-
             // Validate against available options if provided.
             if (empty($options) || in_array($item, $valid_values, true)) {
                 $sanitized[] = $item;
@@ -455,7 +444,7 @@ class Sanitizer
      */
     private function sanitizeWysiwyg(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -473,7 +462,7 @@ class Sanitizer
      */
     private function sanitizeCode(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
@@ -490,16 +479,15 @@ class Sanitizer
      */
     private function sanitizeColor(mixed $value): string
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = (string) $value;
         }
 
         $value = sanitize_text_field($value);
-
         // Validate hex color.
-        if (!empty($value) && !preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
+        if (! empty($value) && ! preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
             // Try rgba format.
-            if (!preg_match('/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*[\d.]+\s*)?\)$/', $value)) {
+            if (! preg_match('/^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*[\d.]+\s*)?\)$/', $value)) {
                 return '';
             }
         }
@@ -517,7 +505,6 @@ class Sanitizer
     private function sanitizeAttachment(mixed $value): int
     {
         $id = absint($value);
-
         // Verify attachment exists.
         if ($id > 0 && get_post_type($id) !== 'attachment') {
             return 0;
@@ -542,7 +529,7 @@ class Sanitizer
         }
 
         // Filter out invalid IDs and verify attachments exist.
-        $valid_ids = [];
+        $valid_ids = array();
         foreach ($ids as $id) {
             if ($id > 0 && get_post_type($id) === 'attachment') {
                 $valid_ids[] = $id;
@@ -562,9 +549,8 @@ class Sanitizer
     private function sanitizePostSelect(mixed $value): int
     {
         $id = absint($value);
-
         // Verify post exists.
-        if ($id > 0 && !get_post($id)) {
+        if ($id > 0 && ! get_post($id)) {
             return 0;
         }
 
@@ -581,11 +567,10 @@ class Sanitizer
     private function sanitizeTermSelect(mixed $value): int
     {
         $id = absint($value);
-
         // Verify term exists.
         if ($id > 0) {
             $term = get_term($id);
-            if (!$term || is_wp_error($term)) {
+            if (! $term || is_wp_error($term)) {
                 return 0;
             }
         }
@@ -603,9 +588,8 @@ class Sanitizer
     private function sanitizeUserSelect(mixed $value): int
     {
         $id = absint($value);
-
         // Verify user exists.
-        if ($id > 0 && !get_user_by('ID', $id)) {
+        if ($id > 0 && ! get_user_by('ID', $id)) {
             return 0;
         }
 
@@ -622,33 +606,27 @@ class Sanitizer
      */
     private function sanitizeRepeater(mixed $value, array $field): array
     {
-        if (!is_array($value)) {
-            return [];
+        if (! is_array($value)) {
+            return array();
         }
 
-        $sub_fields = $field['fields'] ?? [];
-        $sanitized = [];
-
+        $sub_fields = $field['fields'] ?? array();
+        $sanitized = array();
         foreach ($value as $row_index => $row_data) {
-            if (!is_array($row_data)) {
+            if (! is_array($row_data)) {
                 continue;
             }
 
-            $sanitized_row = [];
-
+            $sanitized_row = array();
             foreach ($sub_fields as $sub_field) {
                 $sub_field_id = $sub_field['id'];
-
-                if (isset($row_data[$sub_field_id])) {
-                    $sanitized_row[$sub_field_id] = $this->sanitize(
-                        $row_data[$sub_field_id],
-                        $sub_field
-                    );
+                if (isset($row_data[ $sub_field_id ])) {
+                    $sanitized_row[ $sub_field_id ] = $this->sanitize($row_data[ $sub_field_id ], $sub_field);
                 }
             }
 
             // Only add non-empty rows.
-            if (!empty($sanitized_row)) {
+            if (! empty($sanitized_row)) {
                 $sanitized[] = $sanitized_row;
             }
         }
@@ -667,21 +645,16 @@ class Sanitizer
      */
     private function sanitizeGroup(mixed $value, array $field): array
     {
-        if (!is_array($value)) {
-            return [];
+        if (! is_array($value)) {
+            return array();
         }
 
-        $sub_fields = $field['fields'] ?? [];
-        $sanitized = [];
-
+        $sub_fields = $field['fields'] ?? array();
+        $sanitized = array();
         foreach ($sub_fields as $sub_field) {
             $sub_field_id = $sub_field['id'];
-
-            if (isset($value[$sub_field_id])) {
-                $sanitized[$sub_field_id] = $this->sanitize(
-                    $value[$sub_field_id],
-                    $sub_field
-                );
+            if (isset($value[ $sub_field_id ])) {
+                $sanitized[ $sub_field_id ] = $this->sanitize($value[ $sub_field_id ], $sub_field);
             }
         }
 
@@ -698,93 +671,76 @@ class Sanitizer
      */
     public function validate(mixed $value, array $field): array
     {
-        $errors = [];
-
+        $errors = array();
         // Check for custom validate callback.
-        if (!empty($field['validate']) && is_callable($field['validate'])) {
+        if (! empty($field['validate']) && is_callable($field['validate'])) {
             $result = call_user_func($field['validate'], $value, $field);
-
             if ($result !== true) {
                 $errors[] = is_string($result) ? $result : __('Validation failed.', 'kp-wsf');
             }
 
-            return [
+            return array(
                 'valid'  => empty($errors),
                 'errors' => $errors,
-            ];
+            );
         }
 
         // Required check.
-        if (!empty($field['required'])) {
+        if (! empty($field['required'])) {
             if ($this->isEmpty($value)) {
-                $errors[] = sprintf(
-                    __('%s is required.', 'kp-wsf'),
-                    $field['label'] ?? $field['id']
-                );
+                $errors[] = sprintf(__('%s is required.', 'kp-wsf'), $field['label'] ?? $field['id']);
             }
         }
 
         // Type-specific validation.
         $type = $field['type'] ?? 'text';
-
         switch ($type) {
             case 'email':
-                if (!empty($value) && !is_email($value)) {
+                if (! empty($value) && ! is_email($value)) {
                     $errors[] = __('Please enter a valid email address.', 'kp-wsf');
                 }
-                break;
 
+                break;
             case 'url':
-                if (!empty($value) && !filter_var($value, FILTER_VALIDATE_URL)) {
+                if (! empty($value) && ! filter_var($value, FILTER_VALIDATE_URL)) {
                     $errors[] = __('Please enter a valid URL.', 'kp-wsf');
                 }
-                break;
 
+                break;
             case 'number':
             case 'range':
-                if (!empty($value) || $value === 0 || $value === '0') {
+                if (! empty($value) || $value === 0 || $value === '0') {
                     if (isset($field['min']) && $value < $field['min']) {
-                        $errors[] = sprintf(
-                            __('Value must be at least %s.', 'kp-wsf'),
-                            $field['min']
-                        );
+                        $errors[] = sprintf(__('Value must be at least %s.', 'kp-wsf'), $field['min']);
                     }
                     if (isset($field['max']) && $value > $field['max']) {
-                        $errors[] = sprintf(
-                            __('Value must be no more than %s.', 'kp-wsf'),
-                            $field['max']
-                        );
+                            $errors[] = sprintf(__('Value must be no more than %s.', 'kp-wsf'), $field['max']);
                     }
                 }
+
                 break;
         }
 
         // Pattern validation.
-        if (!empty($field['pattern']) && !empty($value)) {
-            if (!preg_match('/' . $field['pattern'] . '/', $value)) {
+        if (! empty($field['pattern']) && ! empty($value)) {
+            if (! preg_match('/' . $field['pattern'] . '/', $value)) {
                 $errors[] = $field['pattern_message'] ?? __('Value does not match the required format.', 'kp-wsf');
             }
         }
 
         // Min/max length validation.
-        if (!empty($field['minlength']) && strlen((string) $value) < $field['minlength']) {
-            $errors[] = sprintf(
-                __('Value must be at least %d characters.', 'kp-wsf'),
-                $field['minlength']
-            );
+        if (! empty($field['minlength']) && strlen((string) $value) < $field['minlength']) {
+            $errors[] = sprintf(__('Value must be at least %d characters.', 'kp-wsf'), $field['minlength']);
         }
 
-        if (!empty($field['maxlength']) && strlen((string) $value) > $field['maxlength']) {
-            $errors[] = sprintf(
-                __('Value must be no more than %d characters.', 'kp-wsf'),
-                $field['maxlength']
-            );
+        if (! empty($field['maxlength']) && strlen((string) $value) > $field['maxlength']) {
+            $errors[] = sprintf(__('Value must be no more than %d characters.', 'kp-wsf'), $field['maxlength']);
         }
 
-        return [
+        return array(
             'valid'  => empty($errors),
             'errors' => $errors,
-        ];
+        );
     }
 
     /**
@@ -809,7 +765,8 @@ class Sanitizer
         }
 
         if (is_bool($value)) {
-            return false; // Booleans are never "empty" for required purposes.
+            return false;
+            // Booleans are never "empty" for required purposes.
         }
 
         return empty($value);

@@ -9,7 +9,6 @@
             "email": "iam@kevinpirnie.com"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
         "php": ">=8.2"
     },
@@ -17,11 +16,6 @@
         "psr-4": {
             "KP\\WPStarterFramework\\": "src/"
         }
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "@php -r \"if (!is_dir('assets')) mkdir('assets', 0755, true);\""
-        ]
     },
     "keywords": [
         "wordpress",
@@ -31,6 +25,17 @@
         "blocks",
         "framework"
     ],
+    "scripts": {
+        "cs-check": "phpcs src --standard=PSR12 --ignore=*.js,*.css -n",
+        "cs-fix": "phpcbf src --standard=PSR12 --ignore=*.js,*.css -n"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "support": {
         "issues": "https://github.com/kpirnie/kpt-wpfieldframework/issues",
         "source": "https://github.com/kpirnie/kpt-wpfieldframework"

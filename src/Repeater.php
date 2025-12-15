@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Repeater - Repeater field group handler
  *
@@ -19,7 +20,6 @@ namespace KP\WPStarterFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
-
 /**
  * Class Repeater
  *
@@ -37,7 +37,6 @@ class Repeater
      * @var FieldTypes
      */
     private FieldTypes $field_types;
-
     /**
      * Constructor.
      *
@@ -60,11 +59,9 @@ class Repeater
     public function render(array $field, mixed $value): string
     {
         // Ensure value is array.
-        $value = is_array($value) ? $value : [];
-
+        $value = is_array($value) ? $value : array();
         // Get sub-fields configuration.
-        $sub_fields = $field['fields'] ?? [];
-
+        $sub_fields = $field['fields'] ?? array();
         if (empty($sub_fields)) {
             return '<p class="kp-wsf-error">' . esc_html__('No sub-fields defined for repeater.', 'kp-wsf') . '</p>';
         }
@@ -76,38 +73,19 @@ class Repeater
         $collapsed = $field['collapsed'] ?? false;
         $sortable = $field['sortable'] ?? true;
         $row_label = $field['row_label'] ?? __('Row', 'kp-wsf');
-
         // Build HTML.
-        $html = sprintf(
-            '<div class="kp-wsf-repeater" data-min-rows="%d" data-max-rows="%d" data-field-id="%s">',
-            $min_rows,
-            $max_rows,
-            esc_attr($field['id'])
-        );
-
+        $html = sprintf('<div class="kp-wsf-repeater" data-min-rows="%d" data-max-rows="%d" data-field-id="%s">', $min_rows, $max_rows, esc_attr($field['id']));
         // Repeater header.
-        if (!empty($field['label'])) {
-            $html .= sprintf(
-                '<div class="kp-wsf-repeater__header"><h4>%s</h4></div>',
-                esc_html($field['label'])
-            );
+        if (! empty($field['label'])) {
+            $html .= sprintf('<div class="kp-wsf-repeater__header"><h4>%s</h4></div>', esc_html($field['label']));
         }
 
         // Rows container.
         $html .= '<div class="kp-wsf-repeater__rows">';
-
         // Render existing rows.
-        if (!empty($value)) {
+        if (! empty($value)) {
             foreach ($value as $row_index => $row_data) {
-                $html .= $this->renderRow(
-                    $field,
-                    $sub_fields,
-                    $row_index,
-                    $row_data,
-                    $collapsed,
-                    $sortable,
-                    $row_label
-                );
+                $html .= $this->renderRow($field, $sub_fields, $row_index, $row_data, $collapsed, $sortable, $row_label);
             }
         }
 
@@ -115,19 +93,12 @@ class Repeater
         $current_count = count($value);
         if ($min_rows > 0 && $current_count < $min_rows) {
             for ($i = $current_count; $i < $min_rows; $i++) {
-                $html .= $this->renderRow(
-                    $field,
-                    $sub_fields,
-                    $i,
-                    [],
-                    $collapsed,
-                    $sortable,
-                    $row_label
-                );
+                $html .= $this->renderRow($field, $sub_fields, $i, array(), $collapsed, $sortable, $row_label);
             }
         }
 
-        $html .= '</div>'; // End rows container.
+        $html .= '</div>';
+        // End rows container.
 
         // Add row button.
         $html .= sprintf(
@@ -136,26 +107,15 @@ class Repeater
             </div>',
             esc_html($button_label)
         );
-
         // Row template for JavaScript cloning.
         $html .= '<script type="text/html" class="kp-wsf-repeater__template">';
-        $html .= $this->renderRow(
-            $field,
-            $sub_fields,
-            '{{INDEX}}',
-            [],
-            $collapsed,
-            $sortable,
-            $row_label,
-            true
-        );
+        $html .= $this->renderRow($field, $sub_fields, '{{INDEX}}', array(), $collapsed, $sortable, $row_label, true);
         $html .= '</script>';
-
-        $html .= '</div>'; // End repeater.
+        $html .= '</div>';
+        // End repeater.
 
         // Output inline styles (once).
         $html .= $this->getInlineStyles();
-
         return $html;
     }
 
@@ -173,29 +133,13 @@ class Repeater
      * @param  bool       $is_template Whether this is the template row.
      * @return string                  The rendered row HTML.
      */
-    private function renderRow(
-        array $field,
-        array $sub_fields,
-        int|string $row_index,
-        array $row_data,
-        bool $collapsed,
-        bool $sortable,
-        string $row_label,
-        bool $is_template = false
-    ): string {
-        $collapsed_class = $collapsed && !$is_template ? ' kp-wsf-repeater__row--collapsed' : '';
+    private function renderRow(array $field, array $sub_fields, int|string $row_index, array $row_data, bool $collapsed, bool $sortable, string $row_label, bool $is_template = false): string
+    {
+        $collapsed_class = $collapsed && ! $is_template ? ' kp-wsf-repeater__row--collapsed' : '';
         $template_class = $is_template ? ' kp-wsf-repeater__row--template' : '';
-
-        $html = sprintf(
-            '<div class="kp-wsf-repeater__row%s%s" data-row-index="%s">',
-            $collapsed_class,
-            $template_class,
-            esc_attr((string) $row_index)
-        );
-
+        $html = sprintf('<div class="kp-wsf-repeater__row%s%s" data-row-index="%s">', $collapsed_class, $template_class, esc_attr((string) $row_index));
         // Row header with controls.
         $html .= '<div class="kp-wsf-repeater__row-header">';
-
         // Drag handle for sorting.
         if ($sortable) {
             $html .= '<span class="kp-wsf-repeater__drag dashicons dashicons-menu" title="' . esc_attr__('Drag to reorder', 'kp-wsf') . '"></span>';
@@ -203,17 +147,12 @@ class Repeater
 
         // Row label/title.
         $display_index = is_numeric($row_index) ? (int) $row_index + 1 : $row_index;
-        $html .= sprintf(
-            '<span class="kp-wsf-repeater__row-title">%s <span class="kp-wsf-repeater__row-number">%s</span></span>',
-            esc_html($row_label),
-            esc_html((string) $display_index)
-        );
-
+        $html .= sprintf('<span class="kp-wsf-repeater__row-title">%s <span class="kp-wsf-repeater__row-number">%s</span></span>', esc_html($row_label), esc_html((string) $display_index));
         // Row controls.
         $html .= '<div class="kp-wsf-repeater__row-controls">';
-
         // Toggle button for collapse.
-        if ($collapsed || true) { // Always show toggle.
+        if ($collapsed || true) {
+            // Always show toggle.
             $html .= '<button type="button" class="kp-wsf-repeater__toggle" title="' . esc_attr__('Toggle', 'kp-wsf') . '">';
             $html .= '<span class="dashicons dashicons-arrow-down-alt2"></span>';
             $html .= '</button>';
@@ -223,38 +162,35 @@ class Repeater
         $html .= '<button type="button" class="kp-wsf-repeater__remove" title="' . esc_attr__('Remove', 'kp-wsf') . '">';
         $html .= '<span class="dashicons dashicons-trash"></span>';
         $html .= '</button>';
-
-        $html .= '</div>'; // End controls.
-        $html .= '</div>'; // End header.
+        $html .= '</div>';
+        // End controls.
+        $html .= '</div>';
+        // End header.
 
         // Row content with fields.
         $html .= '<div class="kp-wsf-repeater__row-content">';
-
         foreach ($sub_fields as $sub_field) {
             // Build unique field ID and name for this row.
             $sub_field_id = $field['id'] . '_' . $row_index . '_' . $sub_field['id'];
-            $sub_field_name = sprintf(
-                '%s[%s][%s]',
-                $field['name'] ?? $field['id'],
-                $row_index,
-                $sub_field['id']
-            );
-
+            $sub_field_name = sprintf('%s[%s][%s]', $field['name'] ?? $field['id'], $row_index, $sub_field['id']);
             // Get value for this sub-field.
-            $sub_value = $row_data[$sub_field['id']] ?? ($sub_field['default'] ?? null);
-
+            $sub_value = $row_data[ $sub_field['id'] ] ?? ( $sub_field['default'] ?? null );
             // Clone sub-field config with updated ID and name.
-            $sub_field_config = array_merge($sub_field, [
-                'id'   => $sub_field_id,
-                'name' => $sub_field_name,
-            ]);
-
+            $sub_field_config = array_merge(
+                $sub_field,
+                array(
+                    'id'   => $sub_field_id,
+                    'name' => $sub_field_name,
+                )
+            );
             // Render the sub-field.
-            $html .= $this->renderSubField($sub_field_config, $sub_value);
+                    $html .= $this->renderSubField($sub_field_config, $sub_value);
         }
 
-        $html .= '</div>'; // End content.
-        $html .= '</div>'; // End row.
+        $html .= '</div>';
+        // End content.
+        $html .= '</div>';
+        // End row.
 
         return $html;
     }
@@ -270,44 +206,32 @@ class Repeater
     private function renderSubField(array $field, mixed $value): string
     {
         $type = $field['type'] ?? 'text';
-
         // Skip rendering repeaters within repeaters (prevent infinite nesting).
         if ($type === 'repeater') {
             return '<p class="kp-wsf-error">' . esc_html__('Nested repeaters are not supported.', 'kp-wsf') . '</p>';
         }
 
         // Layout-only fields.
-        $layout_types = ['heading', 'separator', 'html', 'message'];
+        $layout_types = array( 'heading', 'separator', 'html', 'message' );
         if (in_array($type, $layout_types, true)) {
             return $this->field_types->render($field, $value);
         }
 
         // Standard field with label.
         $html = '<div class="kp-wsf-repeater__field kp-wsf-repeater__field--' . esc_attr($type) . '">';
-
-        if (!empty($field['label'])) {
-            $required = !empty($field['required']) ? ' <span class="required">*</span>' : '';
-            $html .= sprintf(
-                '<label for="%s">%s%s</label>',
-                esc_attr($field['id']),
-                esc_html($field['label']),
-                $required
-            );
+        if (! empty($field['label'])) {
+            $required = ! empty($field['required']) ? ' <span class="required">*</span>' : '';
+            $html .= sprintf('<label for="%s">%s%s</label>', esc_attr($field['id']), esc_html($field['label']), $required);
         }
 
         $html .= '<div class="kp-wsf-repeater__field-input">';
         $html .= $this->field_types->render($field, $value);
-
-        if (!empty($field['description'])) {
-            $html .= sprintf(
-                '<p class="description">%s</p>',
-                wp_kses_post($field['description'])
-            );
+        if (! empty($field['description'])) {
+            $html .= sprintf('<p class="description">%s</p>', wp_kses_post($field['description']));
         }
 
         $html .= '</div>';
         $html .= '</div>';
-
         return $html;
     }
 
@@ -315,40 +239,34 @@ class Repeater
      * Sanitize repeater data.
      *
      * @since  1.0.0
-     * @param  mixed $value      The submitted repeater value.
-     * @param  array $field      The repeater field configuration.
+     * @param  mixed     $value      The submitted repeater value.
+     * @param  array     $field      The repeater field configuration.
      * @param  Sanitizer $sanitizer The sanitizer instance.
      * @return array             The sanitized repeater data.
      */
     public function sanitize(mixed $value, array $field, Sanitizer $sanitizer): array
     {
-        if (!is_array($value)) {
-            return [];
+        if (! is_array($value)) {
+            return array();
         }
 
-        $sub_fields = $field['fields'] ?? [];
-        $sanitized = [];
-
+        $sub_fields = $field['fields'] ?? array();
+        $sanitized = array();
         foreach ($value as $row_index => $row_data) {
-            if (!is_array($row_data)) {
+            if (! is_array($row_data)) {
                 continue;
             }
 
-            $sanitized_row = [];
-
+            $sanitized_row = array();
             foreach ($sub_fields as $sub_field) {
                 $sub_field_id = $sub_field['id'];
-
-                if (isset($row_data[$sub_field_id])) {
-                    $sanitized_row[$sub_field_id] = $sanitizer->sanitize(
-                        $row_data[$sub_field_id],
-                        $sub_field
-                    );
+                if (isset($row_data[ $sub_field_id ])) {
+                    $sanitized_row[ $sub_field_id ] = $sanitizer->sanitize($row_data[ $sub_field_id ], $sub_field);
                 }
             }
 
             // Only add non-empty rows.
-            if (!empty($sanitized_row)) {
+            if (! empty($sanitized_row)) {
                 $sanitized[] = $sanitized_row;
             }
         }
@@ -366,13 +284,11 @@ class Repeater
     private function getInlineStyles(): string
     {
         static $styles_output = false;
-
         if ($styles_output) {
             return '';
         }
 
         $styles_output = true;
-
         return '
         <style>
             .kp-wsf-repeater {
@@ -511,7 +427,7 @@ class Repeater
      */
     public static function getValue(array $repeater_data, int $row_index, string $field_id, mixed $default = null): mixed
     {
-        return $repeater_data[$row_index][$field_id] ?? $default;
+        return $repeater_data[ $row_index ][ $field_id ] ?? $default;
     }
 
     /**
@@ -524,11 +440,10 @@ class Repeater
      */
     public static function getColumnValues(array $repeater_data, string $field_id): array
     {
-        $values = [];
-
+        $values = array();
         foreach ($repeater_data as $row) {
-            if (isset($row[$field_id])) {
-                $values[] = $row[$field_id];
+            if (isset($row[ $field_id ])) {
+                $values[] = $row[ $field_id ];
             }
         }
 
@@ -556,6 +471,6 @@ class Repeater
      */
     public static function hasRows(array $repeater_data): bool
     {
-        return !empty($repeater_data);
+        return ! empty($repeater_data);
     }
 }
