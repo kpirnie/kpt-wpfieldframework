@@ -61,6 +61,23 @@ jobs:
           composer install --no-interaction --no-progress
         fi
 
+    # Add this step to check if PHP CodeSniffer is available
+    - name: Install PHP CodeSniffer if needed
+      run: |
+        # Check if phpcs command exists
+        if ! command -v phpcs &> /dev/null; then
+          echo "PHP CodeSniffer not found, installing..."
+          # Check if it's in vendor/bin
+          if [ -f ./vendor/bin/phpcs ]; then
+            echo "PHPCS found in vendor/bin"
+          else
+            echo "Installing PHP CodeSniffer..."
+            composer require --dev squizlabs/php_codesniffer --no-interaction --no-progress
+          fi
+        else
+          echo "PHP CodeSniffer already installed"
+        fi
+
 #    - name: Run PHPStan
 #      run: composer run phpstan
 
