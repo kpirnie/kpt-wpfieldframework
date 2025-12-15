@@ -1,0 +1,38 @@
+{
+    "name": "kevinpirnie/kpt-wpfieldframework",
+    "description": "A PHP framework for creating WordPress Options Pages, Meta Boxes, and Gutenberg Blocks with repeatable field groups.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kevin Pirnie",
+            "email": "iam@kevinpirnie.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "KP\\WPStarterFramework\\": "src/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"if (!is_dir('assets')) mkdir('assets', 0755, true);\""
+        ]
+    },
+    "keywords": [
+        "wordpress",
+        "meta-box",
+        "options-page",
+        "gutenberg",
+        "blocks",
+        "framework"
+    ],
+    "support": {
+        "issues": "https://github.com/kpirnie/kpt-wpfieldframework/issues",
+        "source": "https://github.com/kpirnie/kpt-wpfieldframework"
+    }
+}
