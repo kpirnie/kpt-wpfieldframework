@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    # Add permissions for the GITHUB_TOKEN
+    permissions:
+      contents: write
+      
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.2
+        extensions: redis, memcached, apcu
+
+    - name: Install dependencies
+      run: composer install --no-dev --optimize-autoloader
+
+    # Remove the test step as discussed earlier
+    # - name: Run Tests
+    #   run: composer test
+
+    - name: Create Release
+      run: |
+        gh release create ${{ github.ref_name }} \
+          --title "Release ${{ github.ref_name }}" \
+          --generate-notes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Trigger Packagist Update
+      run: |
+        curl -XPOST -H'content-type:application/json' \
+          'https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_API_TOKEN }}' \
+          -d'{"repository":{"url":"${{ github.event.repository.clone_url }}"}}'

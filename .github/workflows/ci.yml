@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php-version: [8.2, 8.3, 8.4]
+        dependencies: [lowest, highest]
+    
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      memcached:
+        image: memcached:alpine
+        ports:
+          - 11211:11211
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: redis, memcached, apcu
+        coverage: xdebug
+
+    - name: Validate composer.json
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+
+    - name: Install dependencies
+      run: |
+        if [ "${{ matrix.dependencies }}" = "lowest" ]; then
+          composer update --prefer-lowest --no-interaction --no-progress
+        else
+          composer install --no-interaction --no-progress
+        fi
+
+    - name: Run PHPStan
+      run: composer run phpstan
+
+    - name: Run CodeSniffer
+      run: composer run cs-check
+
+    - name: Run Tests
+      run: composer run test
+
+    - name: Run Tests with Coverage
+      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      run: composer run test-coverage
+
+    - name: Upload coverage reports to Codecov
+      if: matrix.php-version == '8.2' && matrix.dependencies == 'highest'
+      uses: codecov/codecov-action@v3
