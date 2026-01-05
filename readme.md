@@ -96,6 +96,7 @@ $framework->addOptionsPage([
     'menu_title'  => 'Theme Options',
     'capability'  => 'manage_options',
     'menu_slug'   => 'theme-options',
+    'option_key'  => 'my_theme_options',
     'icon_url'    => 'dashicons-admin-customizer',
     'position'    => 60,
     'sections'    => [
@@ -117,6 +118,7 @@ $framework->addOptionsPage([
     'page_title' => 'Theme Options',
     'menu_title' => 'Theme Options',
     'menu_slug'  => 'theme-options',
+    'option_key'  => 'my_theme_options',
     'tabs'       => [
         'general' => [
             'title'    => 'General',
@@ -167,20 +169,33 @@ $framework->addOptionsPage([
 ]);
 ```
 
+### Options Page Configuration
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `page_title` | string | Title shown in browser tab |
+| `menu_title` | string | Title shown in admin menu |
+| `menu_slug` | string | URL slug for the page |
+| `option_key` | string | Database option name (defaults to menu_slug with underscores) |
+| `capability` | string | Required user capability |
+| `parent_slug` | string | Parent menu slug for submenus |
+| `icon_url` | string | Dashicon or URL for menu icon |
+| `position` | int | Menu position |
+
 ### Retrieving Options
 
 ```php
 use KP\WPStarterFramework\Framework;
 
-// Get all options.
-$options = get_option('theme_options');
+// Get all options using your custom option key.
+$options = get_option('my_theme_options');
 
 // Get specific option.
 $logo_id = $options['logo'] ?? '';
 
 // Using the Storage class.
 $storage = Framework::getInstance()->getStorage();
-$value = $storage->getOptionKey('theme_options', 'logo', '');
+$value = $storage->getOptionKey('my_theme_options', 'logo', '');
 ```
 
 ## Meta Boxes
