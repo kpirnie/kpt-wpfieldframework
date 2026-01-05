@@ -79,6 +79,7 @@ class OptionsPage
         'icon_url'    => 'dashicons-admin-generic',
         'position'    => null,
         'option_name' => '',
+        'option_key'  => '',
         'tabs'        => array(),
         'sections'    => array(),
     );
@@ -98,6 +99,11 @@ class OptionsPage
         // Set option name from menu slug if not provided.
         if (empty($this->config['option_name'])) {
             $this->config['option_name'] = str_replace('-', '_', $this->config['menu_slug']);
+        }
+
+        // Set option key from option name if not provided.
+        if (empty($this->config['option_key'])) {
+            $this->config['option_key'] = $this->config['option_name'];
         }
 
         // Process sections and fields from config.
@@ -202,6 +208,17 @@ class OptionsPage
     }
 
     /**
+     * Get the option key (used for storing in database).
+     *
+     * @since  1.0.0
+     * @return string
+     */
+    public function getOptionKey(): string
+    {
+        return $this->config['option_key'];
+    }
+
+    /**
      * Register the options page with WordPress.
      *
      * @since  1.0.0
@@ -229,7 +246,7 @@ class OptionsPage
         // Register the main option.
         register_setting(
             $this->config['menu_slug'],
-            $this->config['option_name'],
+            $this->config['option_key'],
             array(
                 'type'              => 'array',
                 'sanitize_callback' => array( $this, 'sanitizeOptions' ),
@@ -448,10 +465,10 @@ class OptionsPage
     private function renderField(array $field): void
     {
         // Get current value from options.
-        $options = $this->storage->getOption($this->config['option_name'], array());
+        $options = $this->storage->getOption($this->config['option_key'], array());
         $value = $options[ $field['id'] ] ?? ( $field['default'] ?? null );
         // Set the field name to use array notation for the option.
-        $field['name'] = sprintf('%s[%s]', $this->config['option_name'], $field['id']);
+        $field['name'] = sprintf('%s[%s]', $this->config['option_key'], $field['id']);
         // Render the field.
         echo $this->field_types->render($field, $value);
         // Render description if present.
@@ -505,7 +522,7 @@ class OptionsPage
      */
     public function getOptions(): array
     {
-        return $this->storage->getOption($this->config['option_name'], array());
+        return $this->storage->getOption($this->config['option_key'], array());
     }
 
     /**
@@ -534,7 +551,7 @@ class OptionsPage
     {
         $options = $this->getOptions();
         $options[ $key ] = $value;
-        return $this->storage->updateOption($this->config['option_name'], $options);
+        return $this->storage->updateOption($this->config['option_key'], $options);
     }
 
     /**
@@ -548,6 +565,6 @@ class OptionsPage
     {
         $options = $this->getOptions();
         unset($options[ $key ]);
-        return $this->storage->updateOption($this->config['option_name'], $options);
+        return $this->storage->updateOption($this->config['option_key'], $options);
     }
 }
