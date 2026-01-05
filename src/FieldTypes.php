@@ -57,6 +57,7 @@ class FieldTypes
         'checkbox',
         'checkboxes',
         'radio',
+        'link',
         // Text areas/editors.
         'textarea',
         'wysiwyg',
@@ -495,6 +496,66 @@ class FieldTypes
     // =========================================================================
 
     /**
+     * Render a link selector field.
+     *
+     * Uses WordPress's built-in wpLink dialog.
+     *
+     * @since  1.0.0
+     * @param  array $field The field configuration.
+     * @param  mixed $value The current value (array with url, title, target).
+     * @return string       The field HTML.
+     */
+    private function renderLink(array $field, mixed $value): string
+    {
+        // Ensure value is array.
+        $value = is_array($value) ? $value : [];
+        $url = $value['url'] ?? '';
+        $title = $value['title'] ?? '';
+        $target = $value['target'] ?? '';
+
+        $html = '<div class="kp-wsf-link-field">';
+
+        // URL input.
+        $html .= sprintf(
+            '<input type="text" id="%s_url" name="%s[url]" value="%s" class="regular-text kp-wsf-link-url" placeholder="%s" />',
+            esc_attr($field['id']),
+            esc_attr($field['name']),
+            esc_url($url),
+            esc_attr__('URL', 'kp-wsf')
+        );
+
+        // Link button.
+        $html .= sprintf(
+            ' <button type="button" class="button kp-wsf-link-select" data-target="%s">%s</button>',
+            esc_attr($field['id']),
+            esc_html__('Select Link', 'kp-wsf')
+        );
+
+        // Title input.
+        $html .= sprintf(
+            '<input type="text" id="%s_title" name="%s[title]" value="%s" class="regular-text kp-wsf-link-title" placeholder="%s" />',
+            esc_attr($field['id']),
+            esc_attr($field['name']),
+            esc_attr($title),
+            esc_attr__('Link Text', 'kp-wsf')
+        );
+
+        // Target checkbox.
+        $checked = $target === '_blank' ? ' checked="checked"' : '';
+        $html .= sprintf(
+            '<label class="kp-wsf-link-target-label"><input type="checkbox" id="%s_target" name="%s[target]" value="_blank" class="kp-wsf-link-target"%s /> %s</label>',
+            esc_attr($field['id']),
+            esc_attr($field['name']),
+            $checked,
+            esc_html__('Open in new tab', 'kp-wsf')
+        );
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
      * Render a select dropdown field.
      *
      * @since  1.0.0
@@ -584,7 +645,7 @@ class FieldTypes
         $value = is_array($value) ? $value : array();
         $html = '<fieldset class="kp-wsf-checkboxes">';
         foreach ($field['options'] as $opt_value => $opt_label) {
-            $checked = in_array($opt_value, $value, true) ? ' checked="checked"' : '';
+            $checked = in_array((string) $opt_value, array_map('strval', $value), true) ? ' checked="checked"' : '';
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
             $html .= sprintf('<label for="%s"><input type="checkbox" id="%s" name="%s[]" value="%s"%s /> %s</label><br />', esc_attr($opt_id), esc_attr($opt_id), esc_attr($field['name']), esc_attr($opt_value), $checked, esc_html($opt_label));
         }

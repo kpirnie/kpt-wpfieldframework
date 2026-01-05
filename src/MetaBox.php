@@ -616,6 +616,18 @@ class MetaBox
                 color: #d63638;
                 font-style: italic;
             }
+            .kp-wsf-link-field input.kp-wsf-link-url,
+            .kp-wsf-link-field input.kp-wsf-link-title {
+                display: block;
+                margin-bottom: 8px;
+            }
+            .kp-wsf-link-field .button {
+                margin-bottom: 8px;
+            }
+            .kp-wsf-link-target-label {
+                display: block;
+                margin-top: 5px;
+            }
         </style>
         <?php
     }

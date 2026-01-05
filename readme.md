@@ -1,4 +1,4 @@
-# KPT WP Field Framework
+# KP WP Starter Framework
 
 A PHP framework for creating WordPress Options Pages, Meta Boxes, and Gutenberg Blocks with repeatable field groups.
 
@@ -10,7 +10,7 @@ A PHP framework for creating WordPress Options Pages, Meta Boxes, and Gutenberg 
 ## Installation
 
 ```bash
-composer require kevinpirnie/kpt-wpfieldframework
+composer require kevinpirnie/kp-wp-starter-framework
 ```
 
 ## Quick Start
@@ -30,6 +30,7 @@ $framework->addOptionsPage([
     'page_title' => 'My Plugin Settings',
     'menu_title' => 'My Plugin',
     'menu_slug'  => 'my-plugin-settings',
+    'option_key' => 'my_plugin_options',
     'sections'   => [
         'general' => [
             'title'  => 'General Settings',
@@ -111,6 +112,19 @@ $framework->addOptionsPage([
 ]);
 ```
 
+### Options Page Configuration
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `page_title` | string | Title shown in browser tab |
+| `menu_title` | string | Title shown in admin menu |
+| `menu_slug` | string | URL slug for the page |
+| `option_key` | string | Database option name (defaults to menu_slug with underscores) |
+| `capability` | string | Required user capability (default: `manage_options`) |
+| `parent_slug` | string | Parent menu slug for submenus |
+| `icon_url` | string | Dashicon or URL for menu icon |
+| `position` | int | Menu position |
+
 ### Tabbed Options Page
 
 ```php
@@ -118,7 +132,7 @@ $framework->addOptionsPage([
     'page_title' => 'Theme Options',
     'menu_title' => 'Theme Options',
     'menu_slug'  => 'theme-options',
-    'option_key'  => 'my_theme_options',
+    'option_key' => 'my_theme_options',
     'tabs'       => [
         'general' => [
             'title'    => 'General',
@@ -162,25 +176,13 @@ $framework->addOptionsPage([
     'page_title'  => 'Plugin Settings',
     'menu_title'  => 'Settings',
     'menu_slug'   => 'my-plugin-settings',
+    'option_key'  => 'my_plugin_settings',
     'parent_slug' => 'options-general.php', // Under Settings menu.
     'sections'    => [
         // ...
     ],
 ]);
 ```
-
-### Options Page Configuration
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `page_title` | string | Title shown in browser tab |
-| `menu_title` | string | Title shown in admin menu |
-| `menu_slug` | string | URL slug for the page |
-| `option_key` | string | Database option name (defaults to menu_slug with underscores) |
-| `capability` | string | Required user capability |
-| `parent_slug` | string | Parent menu slug for submenus |
-| `icon_url` | string | Dashicon or URL for menu icon |
-| `position` | int | Menu position |
 
 ### Retrieving Options
 
@@ -653,6 +655,39 @@ $photo  = $attributes['photo'] ?? 0;
 ]
 ```
 
+### Link Field
+
+The link field provides a WordPress link selector dialog with URL, title, and target options.
+
+```php
+// Link selector
+[
+    'id'    => 'cta_link',
+    'type'  => 'link',
+    'label' => 'Call to Action Link',
+]
+```
+
+**Retrieving Link Data:**
+
+```php
+$link = get_post_meta($post_id, 'cta_link', true);
+
+$url    = $link['url'] ?? '';
+$title  = $link['title'] ?? '';
+$target = $link['target'] ?? ''; // '_blank' or ''
+
+// Output as HTML link
+if ($url) {
+    printf(
+        '<a href="%s"%s>%s</a>',
+        esc_url($url),
+        $target === '_blank' ? ' target="_blank" rel="noopener"' : '',
+        esc_html($title ?: $url)
+    );
+}
+```
+
 ### Special Fields
 
 ```php
@@ -778,6 +813,35 @@ $photo  = $attributes['photo'] ?? 0;
             'id'    => 'bio',
             'type'  => 'textarea',
             'label' => 'Biography',
+        ],
+    ],
+]
+```
+
+### Repeater with Link Fields
+
+```php
+[
+    'id'           => 'buttons',
+    'type'         => 'repeater',
+    'label'        => 'Buttons',
+    'button_label' => 'Add Button',
+    'max_rows'     => 5,
+    'fields'       => [
+        [
+            'id'    => 'button_link',
+            'type'  => 'link',
+            'label' => 'Button Link',
+        ],
+        [
+            'id'      => 'button_style',
+            'type'    => 'select',
+            'label'   => 'Style',
+            'options' => [
+                'primary'   => 'Primary',
+                'secondary' => 'Secondary',
+                'outline'   => 'Outline',
+            ],
         ],
     ],
 ]
@@ -943,6 +1007,47 @@ All fields support these common options:
 ]
 ```
 
+## Available Field Types Reference
+
+| Type | Description |
+|------|-------------|
+| `text` | Single line text input |
+| `email` | Email address input |
+| `url` | URL input |
+| `password` | Password input |
+| `number` | Numeric input with min/max/step |
+| `tel` | Telephone number input |
+| `hidden` | Hidden input field |
+| `date` | Date picker |
+| `datetime` | Date and time picker |
+| `time` | Time picker |
+| `week` | Week picker |
+| `month` | Month picker |
+| `select` | Dropdown select |
+| `multiselect` | Multiple selection dropdown |
+| `checkbox` | Single checkbox |
+| `checkboxes` | Multiple checkboxes |
+| `radio` | Radio button group |
+| `textarea` | Multi-line text area |
+| `wysiwyg` | WordPress visual editor |
+| `code` | Code editor with syntax highlighting |
+| `image` | Image upload with preview |
+| `file` | File upload |
+| `gallery` | Multiple image gallery |
+| `link` | WordPress link selector with URL, title, and target |
+| `color` | Color picker |
+| `range` | Range slider |
+| `post_select` | Post selection dropdown |
+| `page_select` | Page selection dropdown |
+| `term_select` | Taxonomy term dropdown |
+| `user_select` | User selection dropdown |
+| `heading` | Section heading |
+| `separator` | Horizontal separator line |
+| `html` | Raw HTML content |
+| `message` | Notice/message box |
+| `repeater` | Repeatable field group |
+| `group` | Field group |
+
 ## Storage API
 
 The Storage class provides a unified interface for all WordPress data storage:
@@ -1070,6 +1175,7 @@ KpWsfAdmin.initCodeEditors();
 KpWsfAdmin.initRangeSliders();
 KpWsfAdmin.initRepeaterSortable();
 KpWsfAdmin.initGallerySortable();
+KpWsfAdmin.initLinkSelector();
 
 // Add repeater row programmatically.
 KpWsfAdmin.repeaterAddRow($('.kp-wsf-repeater'));

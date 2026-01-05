@@ -269,6 +269,9 @@ final class Framework
 
         // Enqueue WordPress media scripts for file/image uploads.
         wp_enqueue_media();
+        // Enqueue WordPress link dialog.
+        wp_enqueue_script('wplink');
+        wp_enqueue_style('editor-buttons');
         // Enqueue WordPress color picker.
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');

@@ -59,6 +59,7 @@ class Sanitizer
             'time'                      => $this->sanitizeTime($value),
             'week'                      => $this->sanitizeWeek($value),
             'month'                     => $this->sanitizeMonth($value),
+            'link'                      => $this->sanitizeLink($value),
             'select', 'radio'           => $this->sanitizeSelect($value, $field),
             'multiselect', 'checkboxes' => $this->sanitizeMultiSelect($value, $field),
             'checkbox'                  => $this->sanitizeCheckbox($value),
@@ -102,6 +103,26 @@ class Sanitizer
         }
 
         return '';
+    }
+
+    /**
+     * Sanitize link field value.
+     *
+     * @since  1.0.0
+     * @param  mixed $value The value to sanitize.
+     * @return array        The sanitized link array.
+     */
+    private function sanitizeLink(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return ['url' => '', 'title' => '', 'target' => ''];
+        }
+
+        return [
+            'url'    => esc_url_raw($value['url'] ?? ''),
+            'title'  => sanitize_text_field($value['title'] ?? ''),
+            'target' => ($value['target'] ?? '') === '_blank' ? '_blank' : '',
+        ];
     }
 
     /**

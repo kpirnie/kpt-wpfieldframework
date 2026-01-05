@@ -17,7 +17,7 @@
  * @since       1.0.0
  */
 
-(function($) {
+(function ($) {
     'use strict';
 
     /**
@@ -34,7 +34,7 @@
          * @since 1.0.0
          * @return {void}
          */
-        init: function() {
+        init: function () {
             this.initRepeaters();
             this.initMediaUploads();
             this.initColorPickers();
@@ -42,6 +42,73 @@
             this.initCodeEditors();
             this.initRangeSliders();
             this.initGallery();
+            this.initLinkSelector();
+        },
+
+        // =====================================================================
+        // Link Selector
+        // =====================================================================
+
+        /**
+         * Initialize link selector functionality.
+         *
+         * @since 1.0.0
+         * @return {void}
+         */
+        initLinkSelector: function () {
+            // Ensure wpLink is available.
+            if (typeof wpLink === 'undefined') {
+                return;
+            }
+
+            $(document).on('click', '.kp-wsf-link-select', function (e) {
+                e.preventDefault();
+
+                const $button = $(this);
+                const targetId = $button.data('target');
+                const $container = $button.closest('.kp-wsf-link-field');
+                const $urlInput = $container.find('.kp-wsf-link-url');
+                const $titleInput = $container.find('.kp-wsf-link-title');
+
+                // Store reference to current field.
+                window.kpWsfCurrentLinkField = {
+                    container: $container,
+                    urlInput: $urlInput,
+                    titleInput: $titleInput
+                };
+
+                // Set current values in wpLink.
+                $('#wp-link-url').val($urlInput.val());
+                $('#wp-link-text').val($titleInput.val());
+
+                // Open wpLink dialog.
+                wpLink.open(targetId + '_url');
+            });
+
+            // Handle wpLink submit.
+            $(document).on('wplink-close', function () {
+                if (!window.kpWsfCurrentLinkField) {
+                    return;
+                }
+
+                const linkAtts = wpLink.getAttrs();
+                const $field = window.kpWsfCurrentLinkField;
+
+                if (linkAtts.href) {
+                    $field.urlInput.val(linkAtts.href);
+                }
+
+                const linkText = $('#wp-link-text').val();
+                if (linkText) {
+                    $field.titleInput.val(linkText);
+                }
+
+                if (linkAtts.target === '_blank') {
+                    $field.container.find('.kp-wsf-link-target').prop('checked', true);
+                }
+
+                window.kpWsfCurrentLinkField = null;
+            });
         },
 
         // =====================================================================
@@ -54,17 +121,17 @@
          * @since 1.0.0
          * @return {void}
          */
-        initRepeaters: function() {
+        initRepeaters: function () {
             const self = this;
 
             // Add row button.
-            $(document).on('click', '.kp-wsf-repeater__add', function(e) {
+            $(document).on('click', '.kp-wsf-repeater__add', function (e) {
                 e.preventDefault();
                 self.repeaterAddRow($(this).closest('.kp-wsf-repeater'));
             });
 
             // Remove row button.
-            $(document).on('click', '.kp-wsf-repeater__remove', function(e) {
+            $(document).on('click', '.kp-wsf-repeater__remove', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -74,14 +141,14 @@
             });
 
             // Toggle row collapse.
-            $(document).on('click', '.kp-wsf-repeater__toggle', function(e) {
+            $(document).on('click', '.kp-wsf-repeater__toggle', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 $(this).closest('.kp-wsf-repeater__row').toggleClass('kp-wsf-repeater__row--collapsed');
             });
 
             // Row header click to toggle.
-            $(document).on('click', '.kp-wsf-repeater__row-header', function(e) {
+            $(document).on('click', '.kp-wsf-repeater__row-header', function (e) {
                 // Don't toggle if clicking on buttons.
                 if ($(e.target).closest('button').length) {
                     return;
@@ -99,10 +166,10 @@
          * @since 1.0.0
          * @return {void}
          */
-        initRepeaterSortable: function() {
+        initRepeaterSortable: function () {
             const self = this;
 
-            $('.kp-wsf-repeater__rows').each(function() {
+            $('.kp-wsf-repeater__rows').each(function () {
                 if ($(this).data('ui-sortable')) {
                     return; // Already initialized.
                 }
@@ -113,10 +180,10 @@
                     forcePlaceholderSize: true,
                     opacity: 0.8,
                     tolerance: 'pointer',
-                    start: function(event, ui) {
+                    start: function (event, ui) {
                         ui.placeholder.height(ui.item.height());
                     },
-                    stop: function(event, ui) {
+                    stop: function (event, ui) {
                         self.repeaterUpdateIndexes($(this).closest('.kp-wsf-repeater'));
                     }
                 });
@@ -130,7 +197,7 @@
          * @param {jQuery} $repeater The repeater container element.
          * @return {void}
          */
-        repeaterAddRow: function($repeater) {
+        repeaterAddRow: function ($repeater) {
             const $rows = $repeater.find('.kp-wsf-repeater__rows');
             const $template = $repeater.find('.kp-wsf-repeater__template');
             const maxRows = parseInt($repeater.data('max-rows'), 10) || 0;
@@ -176,7 +243,7 @@
          * @param {jQuery} $row The row element to remove.
          * @return {void}
          */
-        repeaterRemoveRow: function($row) {
+        repeaterRemoveRow: function ($row) {
             const $repeater = $row.closest('.kp-wsf-repeater');
             const minRows = parseInt($repeater.data('min-rows'), 10) || 0;
             const $rows = $repeater.find('.kp-wsf-repeater__rows');
@@ -192,7 +259,7 @@
             $(document).trigger('kp-wsf-repeater-row-before-remove', [$row, $repeater]);
 
             // Remove the row with animation.
-            $row.slideUp(200, function() {
+            $row.slideUp(200, function () {
                 $(this).remove();
 
                 // Update row numbers.
@@ -210,10 +277,10 @@
          * @param {jQuery} $repeater The repeater container element.
          * @return {number} The next index.
          */
-        repeaterGetNextIndex: function($repeater) {
+        repeaterGetNextIndex: function ($repeater) {
             let maxIndex = -1;
 
-            $repeater.find('.kp-wsf-repeater__row:not(.kp-wsf-repeater__row--template)').each(function() {
+            $repeater.find('.kp-wsf-repeater__row:not(.kp-wsf-repeater__row--template)').each(function () {
                 const index = parseInt($(this).data('row-index'), 10) || 0;
                 if (index > maxIndex) {
                     maxIndex = index;
@@ -230,10 +297,10 @@
          * @param {jQuery} $repeater The repeater container element.
          * @return {void}
          */
-        repeaterUpdateIndexes: function($repeater) {
+        repeaterUpdateIndexes: function ($repeater) {
             const fieldId = $repeater.data('field-id');
 
-            $repeater.find('.kp-wsf-repeater__row:not(.kp-wsf-repeater__row--template)').each(function(index) {
+            $repeater.find('.kp-wsf-repeater__row:not(.kp-wsf-repeater__row--template)').each(function (index) {
                 const $row = $(this);
                 const oldIndex = $row.data('row-index');
 
@@ -245,7 +312,7 @@
                 $row.find('.kp-wsf-repeater__row-number').first().text(index + 1);
 
                 // Update field names and IDs within the row.
-                $row.find('[name]').each(function() {
+                $row.find('[name]').each(function () {
                     const $field = $(this);
                     let name = $field.attr('name');
 
@@ -259,7 +326,7 @@
                 });
 
                 // Update field IDs.
-                $row.find('[id]').each(function() {
+                $row.find('[id]').each(function () {
                     const $field = $(this);
                     let id = $field.attr('id');
 
@@ -272,7 +339,7 @@
                 });
 
                 // Update labels.
-                $row.find('label[for]').each(function() {
+                $row.find('label[for]').each(function () {
                     const $label = $(this);
                     let forAttr = $label.attr('for');
 
@@ -292,16 +359,16 @@
          * @param {jQuery} $row The row element.
          * @return {void}
          */
-        initRowFields: function($row) {
+        initRowFields: function ($row) {
             // Initialize color pickers.
-            $row.find('.kp-wsf-color-picker').each(function() {
+            $row.find('.kp-wsf-color-picker').each(function () {
                 if (!$(this).hasClass('wp-color-picker')) {
                     $(this).wpColorPicker();
                 }
             });
 
             // Initialize date pickers.
-            $row.find('.kp-wsf-datepicker').each(function() {
+            $row.find('.kp-wsf-datepicker').each(function () {
                 if (!$(this).hasClass('hasDatepicker')) {
                     $(this).datepicker({
                         dateFormat: $(this).data('date-format') || 'yy-mm-dd',
@@ -313,7 +380,7 @@
 
             // Initialize code editors.
             if (typeof wp !== 'undefined' && wp.codeEditor) {
-                $row.find('.kp-wsf-code-editor').each(function() {
+                $row.find('.kp-wsf-code-editor').each(function () {
                     if (!$(this).data('code-editor-initialized')) {
                         const settings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
                         settings.codemirror = _.extend({}, settings.codemirror, {
@@ -326,7 +393,7 @@
             }
 
             // Initialize range sliders.
-            $row.find('input[type="range"]').each(function() {
+            $row.find('input[type="range"]').each(function () {
                 const $range = $(this);
                 const $value = $range.siblings('.kp-wsf-range-value');
 
@@ -346,29 +413,29 @@
          * @since 1.0.0
          * @return {void}
          */
-        initMediaUploads: function() {
+        initMediaUploads: function () {
             const self = this;
 
             // Image upload.
-            $(document).on('click', '.kp-wsf-upload-image', function(e) {
+            $(document).on('click', '.kp-wsf-upload-image', function (e) {
                 e.preventDefault();
                 self.openMediaUploader($(this), 'image');
             });
 
             // Image remove.
-            $(document).on('click', '.kp-wsf-remove-image', function(e) {
+            $(document).on('click', '.kp-wsf-remove-image', function (e) {
                 e.preventDefault();
                 self.removeMedia($(this), 'image');
             });
 
             // File upload.
-            $(document).on('click', '.kp-wsf-upload-file', function(e) {
+            $(document).on('click', '.kp-wsf-upload-file', function (e) {
                 e.preventDefault();
                 self.openMediaUploader($(this), 'file');
             });
 
             // File remove.
-            $(document).on('click', '.kp-wsf-remove-file', function(e) {
+            $(document).on('click', '.kp-wsf-remove-file', function (e) {
                 e.preventDefault();
                 self.removeMedia($(this), 'file');
             });
@@ -382,7 +449,7 @@
          * @param {string} type    The type of upload ('image' or 'file').
          * @return {void}
          */
-        openMediaUploader: function($button, type) {
+        openMediaUploader: function ($button, type) {
             const self = this;
             const $container = $button.closest('.kp-wsf-' + type + '-field');
 
@@ -399,7 +466,7 @@
             });
 
             // Handle selection.
-            frame.on('select', function() {
+            frame.on('select', function () {
                 const attachment = frame.state().get('selection').first().toJSON();
 
                 if (type === 'image') {
@@ -420,7 +487,7 @@
          * @param {Object} attachment The attachment object.
          * @return {void}
          */
-        setImage: function($container, attachment) {
+        setImage: function ($container, attachment) {
             const $preview = $container.find('.kp-wsf-image-preview');
             const $input = $container.find('.kp-wsf-image-id');
             const $removeBtn = $container.find('.kp-wsf-remove-image');
@@ -449,7 +516,7 @@
          * @param {Object} attachment The attachment object.
          * @return {void}
          */
-        setFile: function($container, attachment) {
+        setFile: function ($container, attachment) {
             const $info = $container.find('.kp-wsf-file-info');
             const $filename = $container.find('.kp-wsf-filename');
             const $link = $container.find('.kp-wsf-file-link');
@@ -482,7 +549,7 @@
          * @param {string} type    The type of media ('image' or 'file').
          * @return {void}
          */
-        removeMedia: function($button, type) {
+        removeMedia: function ($button, type) {
             const $container = $button.closest('.kp-wsf-' + type + '-field');
 
             if (type === 'image') {
@@ -508,24 +575,24 @@
          * @since 1.0.0
          * @return {void}
          */
-        initGallery: function() {
+        initGallery: function () {
             const self = this;
 
             // Add images to gallery.
-            $(document).on('click', '.kp-wsf-add-gallery', function(e) {
+            $(document).on('click', '.kp-wsf-add-gallery', function (e) {
                 e.preventDefault();
                 self.openGalleryUploader($(this));
             });
 
             // Remove single image from gallery.
-            $(document).on('click', '.kp-wsf-gallery-remove', function(e) {
+            $(document).on('click', '.kp-wsf-gallery-remove', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 self.removeGalleryImage($(this));
             });
 
             // Clear entire gallery.
-            $(document).on('click', '.kp-wsf-clear-gallery', function(e) {
+            $(document).on('click', '.kp-wsf-clear-gallery', function (e) {
                 e.preventDefault();
 
                 if (confirm(kpWsfAdmin.i18n.confirmDelete || 'Are you sure?')) {
@@ -543,10 +610,10 @@
          * @since 1.0.0
          * @return {void}
          */
-        initGallerySortable: function() {
+        initGallerySortable: function () {
             const self = this;
 
-            $('.kp-wsf-gallery-preview').each(function() {
+            $('.kp-wsf-gallery-preview').each(function () {
                 if ($(this).data('ui-sortable')) {
                     return;
                 }
@@ -555,7 +622,7 @@
                     items: '.kp-wsf-gallery-item',
                     placeholder: 'kp-wsf-gallery-placeholder',
                     tolerance: 'pointer',
-                    stop: function() {
+                    stop: function () {
                         self.updateGalleryIds($(this).closest('.kp-wsf-gallery-field'));
                     }
                 });
@@ -569,7 +636,7 @@
          * @param {jQuery} $button The add button.
          * @return {void}
          */
-        openGalleryUploader: function($button) {
+        openGalleryUploader: function ($button) {
             const self = this;
             const $container = $button.closest('.kp-wsf-gallery-field');
 
@@ -584,7 +651,7 @@
                 multiple: true
             });
 
-            frame.on('select', function() {
+            frame.on('select', function () {
                 const attachments = frame.state().get('selection').toJSON();
                 self.addGalleryImages($container, attachments);
             });
@@ -600,11 +667,11 @@
          * @param {Array}  attachments  Array of attachment objects.
          * @return {void}
          */
-        addGalleryImages: function($container, attachments) {
+        addGalleryImages: function ($container, attachments) {
             const $preview = $container.find('.kp-wsf-gallery-preview');
             const $clearBtn = $container.find('.kp-wsf-clear-gallery');
 
-            attachments.forEach(function(attachment) {
+            attachments.forEach(function (attachment) {
                 // Check if already in gallery.
                 if ($preview.find('[data-id="' + attachment.id + '"]').length) {
                     return;
@@ -640,11 +707,11 @@
          * @param {jQuery} $button The remove button.
          * @return {void}
          */
-        removeGalleryImage: function($button) {
+        removeGalleryImage: function ($button) {
             const $container = $button.closest('.kp-wsf-gallery-field');
             const $item = $button.closest('.kp-wsf-gallery-item');
 
-            $item.fadeOut(200, function() {
+            $item.fadeOut(200, function () {
                 $(this).remove();
                 KpWsfAdmin.updateGalleryIds($container);
 
@@ -662,7 +729,7 @@
          * @param {jQuery} $button The clear button.
          * @return {void}
          */
-        clearGallery: function($button) {
+        clearGallery: function ($button) {
             const $container = $button.closest('.kp-wsf-gallery-field');
 
             $container.find('.kp-wsf-gallery-preview').empty();
@@ -677,10 +744,10 @@
          * @param {jQuery} $container The gallery container.
          * @return {void}
          */
-        updateGalleryIds: function($container) {
+        updateGalleryIds: function ($container) {
             const ids = [];
 
-            $container.find('.kp-wsf-gallery-item').each(function() {
+            $container.find('.kp-wsf-gallery-item').each(function () {
                 ids.push($(this).data('id'));
             });
 
@@ -697,17 +764,17 @@
          * @since 1.0.0
          * @return {void}
          */
-        initColorPickers: function() {
-            $('.kp-wsf-color-picker').each(function() {
+        initColorPickers: function () {
+            $('.kp-wsf-color-picker').each(function () {
                 if (!$(this).hasClass('wp-color-picker')) {
                     const defaultColor = $(this).data('default-color') || '';
 
                     $(this).wpColorPicker({
                         defaultColor: defaultColor,
-                        change: function(event, ui) {
+                        change: function (event, ui) {
                             $(this).trigger('change');
                         },
-                        clear: function() {
+                        clear: function () {
                             $(this).trigger('change');
                         }
                     });
@@ -725,8 +792,8 @@
          * @since 1.0.0
          * @return {void}
          */
-        initDatePickers: function() {
-            $('.kp-wsf-datepicker').each(function() {
+        initDatePickers: function () {
+            $('.kp-wsf-datepicker').each(function () {
                 if (!$(this).hasClass('hasDatepicker')) {
                     $(this).datepicker({
                         dateFormat: $(this).data('date-format') || 'yy-mm-dd',
@@ -748,12 +815,12 @@
          * @since 1.0.0
          * @return {void}
          */
-        initCodeEditors: function() {
+        initCodeEditors: function () {
             if (typeof wp === 'undefined' || !wp.codeEditor) {
                 return;
             }
 
-            $('.kp-wsf-code-editor').each(function() {
+            $('.kp-wsf-code-editor').each(function () {
                 if ($(this).data('code-editor-initialized')) {
                     return;
                 }
@@ -776,7 +843,7 @@
 
                 // Refresh editor when it becomes visible (for tabbed interfaces).
                 if (editor && editor.codemirror) {
-                    setTimeout(function() {
+                    setTimeout(function () {
                         editor.codemirror.refresh();
                     }, 100);
                 }
@@ -796,9 +863,9 @@
          * @since 1.0.0
          * @return {void}
          */
-        initRangeSliders: function() {
+        initRangeSliders: function () {
             // Update value display on input.
-            $(document).on('input', '.kp-wsf-range-field input[type="range"]', function() {
+            $(document).on('input', '.kp-wsf-range-field input[type="range"]', function () {
                 const $range = $(this);
                 const $value = $range.siblings('.kp-wsf-range-value');
 
@@ -808,7 +875,7 @@
             });
 
             // Set initial values.
-            $('.kp-wsf-range-field input[type="range"]').each(function() {
+            $('.kp-wsf-range-field input[type="range"]').each(function () {
                 const $range = $(this);
                 const $value = $range.siblings('.kp-wsf-range-value');
 
@@ -822,7 +889,7 @@
     /**
      * Initialize on document ready.
      */
-    $(document).ready(function() {
+    $(document).ready(function () {
         KpWsfAdmin.init();
     });
 
@@ -832,14 +899,14 @@
     if (typeof wp !== 'undefined' && wp.data && wp.data.subscribe) {
         let previousSelectedBlock = null;
 
-        wp.data.subscribe(function() {
+        wp.data.subscribe(function () {
             const selectedBlock = wp.data.select('core/block-editor')?.getSelectedBlock?.();
 
             if (selectedBlock !== previousSelectedBlock) {
                 previousSelectedBlock = selectedBlock;
 
                 // Delay to allow panel to render.
-                setTimeout(function() {
+                setTimeout(function () {
                     KpWsfAdmin.initColorPickers();
                     KpWsfAdmin.initDatePickers();
                     KpWsfAdmin.initCodeEditors();
