@@ -222,7 +222,17 @@ class FieldTypes
         }
 
         $required = ! empty($field['required']) ? ' <span class="required">*</span>' : '';
-        return sprintf('<label for="%s">%s%s</label>', esc_attr($field['id']), esc_html($field['label']), $required);
+        $sublabel = !empty($field['sublabel'])
+        ? sprintf('<span class="kp-wsf-sublabel">%s</span>', esc_html($field['sublabel']))
+        : '';
+
+        return sprintf(
+            '<label for="%s">%s%s</label>%s',
+            esc_attr($field['id']),
+            esc_html($field['label']),
+            $required,
+            $sublabel
+        );
     }
 
     /**

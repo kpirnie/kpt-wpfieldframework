@@ -628,6 +628,13 @@ class MetaBox
                 display: block;
                 margin-top: 5px;
             }
+            .kp-wsf-sublabel {
+                display: block;
+                font-weight: normal;
+                font-size: 12px;
+                color: #646970;
+                margin-top: 2px;
+            }
         </style>
         <?php
     }
