@@ -14,7 +14,7 @@
     },
     "autoload": {
         "psr-4": {
-            "KP\\WPStarterFramework\\": "src/"
+            "KP\\WPFieldFramework\\": "src/"
         }
     },
     "keywords": [
