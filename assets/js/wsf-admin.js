@@ -10,7 +10,7 @@
  * - Range slider value display
  * - Conditional field logic
  *
- * @package     KP\WPStarterFramework
+ * @package     KP\WPFieldFramework
  * @author      Kevin Pirnie <iam@kevinpirnie.com>
  * @copyright   2025 Kevin Pirnie
  * @license     MIT

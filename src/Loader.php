@@ -6,7 +6,7 @@
  * Provides PSR-4 compatible autoloading for the framework classes
  * and helper methods for bootstrapping the framework in themes or plugins.
  *
- * @package     KP\WPStarterFramework
+ * @package     KP\WPFieldFramework
  * @author      Kevin Pirnie <iam@kevinpirnie.com>
  * @copyright   2025 Kevin Pirnie
  * @license     MIT
@@ -15,10 +15,11 @@
 
 declare(strict_types=1);
 
-namespace KP\WPStarterFramework;
+namespace KP\WPFieldFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
+
 /**
  * Class Loader
  *
@@ -36,31 +37,93 @@ final class Loader
      * @var bool
      */
     private static bool $autoloader_registered = false;
+
     /**
      * The namespace prefix for framework classes.
      *
      * @since 1.0.0
      * @var string
      */
-    private const NAMESPACE_PREFIX = 'KP\\WPStarterFramework\\';
+    private const NAMESPACE_PREFIX = 'KP\\WPFieldFramework\\';
+
     /**
-     * Register the PSR-4 autoloader.
+     * Get the framework's base directory path.
      *
-     * This method allows the framework to be used without Composer's autoloader.
-     * It registers a custom autoloader that maps the namespace to the src directory.
+     * @since 1.0.0
+     */
+    public static function basePath(): string
+    {
+        return dirname(__DIR__);
+    }
+
+    /**
+     * Get the framework's src directory path.
+     *
+     * @since 1.0.0
+     */
+    public static function srcPath(): string
+    {
+        return __DIR__;
+    }
+
+    /**
+     * Get the framework's base URL.
+     *
+     * @since 1.0.0
+     */
+    public static function baseUrl(): string
+    {
+        return self::pathToUrl(self::basePath());
+    }
+
+    /**
+     * Get the framework's source URL.
+     *
+     * @since 1.0.0
+     */
+    public static function srcUrl(): string
+    {
+        return self::pathToUrl(self::srcPath());
+    }
+
+    /**
+     * Initialize the framework with automatic configuration.
+     *
+     * This is a convenience method that handles common initialization tasks:
+     * - Registers the autoloader if needed
+     * - Detects asset paths based on context (plugin/theme)
+     * - Initializes the Framework singleton
      *
      * @since  1.0.0
-     * @return void
+     * @return Framework      The initialized Framework instance.
      */
-    public static function register(): void
+    public static function init(): Framework
     {
-        // Prevent multiple registrations.
-        if (self::$autoloader_registered) {
-            return;
+
+    // make sure our requirements are met
+        $requirements = self::checkRequirements();
+        if (!$requirements['valid']) {
+            self::displayRequirementErrors($requirements['errors']);
+            return null;
         }
 
-        spl_autoload_register(array( self::class, 'autoload' ));
-        self::$autoloader_registered = true;
+        // Register autoloader if not using Composer.
+        if (!self::$autoloader_registered && !class_exists(Framework::class, false)) {
+            self::register();
+        }
+
+        // Get the Framework singleton.
+        $framework = Framework::getInstance();
+
+        // Initialize if not already done.
+        if (!$framework->isInitialized()) {
+            $assets_path = self::basePath() . '/assets';
+            $assets_url = self::baseUrl() . '/assets';
+
+            $framework->init($assets_url, $assets_path);
+        }
+
+        return $framework;
     }
 
     /**
@@ -83,9 +146,11 @@ final class Loader
 
         // Get the relative class name (without namespace prefix).
         $relative_class = substr($class, $prefix_length);
+
         // Build the file path.
         // Replace namespace separators with directory separators.
-        $file = dirname(__DIR__) . '/src/' . str_replace('\\', '/', $relative_class) . '.php';
+        $file = self::srcPath() . '/' . str_replace('\\', '/', $relative_class) . '.php';
+
         // If the file exists, require it.
         if (file_exists($file)) {
             require_once $file;
@@ -93,130 +158,23 @@ final class Loader
     }
 
     /**
-     * Bootstrap the framework with automatic configuration.
+     * Register the PSR-4 autoloader.
      *
-     * This is a convenience method that handles common initialization tasks:
-     * - Registers the autoloader if needed
-     * - Detects asset paths based on context (plugin/theme)
-     * - Initializes the Framework singleton
+     * This method allows the framework to be used without Composer's autoloader.
+     * It registers a custom autoloader that maps the namespace to the src directory.
      *
      * @since  1.0.0
-     * @param  array $options Optional configuration options.
-     *                        - 'assets_url': Override the auto-detected assets URL.
-     *                        - 'assets_path': Override the auto-detected assets path.
-     * @return Framework      The initialized Framework instance.
+     * @return void
      */
-    public static function bootstrap(array $options = array()): Framework
+    private static function register(): void
     {
-        // Register autoloader if not using Composer.
-        if (! self::$autoloader_registered && ! class_exists(Framework::class, false)) {
-            self::register();
+        // Prevent multiple registrations.
+        if (self::$autoloader_registered) {
+            return;
         }
 
-        // Get the Framework singleton.
-        $framework = Framework::getInstance();
-        // Initialize if not already done.
-        if (! $framework->isInitialized()) {
-            $assets_url = $options['assets_url'] ?? '';
-            $assets_path = $options['assets_path'] ?? '';
-            $framework->init($assets_url, $assets_path);
-        }
-
-        return $framework;
-    }
-
-    /**
-     * Bootstrap the framework for use in a plugin.
-     *
-     * Automatically configures asset paths relative to the calling plugin's directory.
-     *
-     * @since  1.0.0
-     * @param  string $plugin_file The main plugin file path (__FILE__ from the plugin).
-     * @return Framework           The initialized Framework instance.
-     */
-    public static function bootstrapPlugin(string $plugin_file): Framework
-    {
-        $plugin_dir = plugin_dir_path($plugin_file);
-        $plugin_url = plugin_dir_url($plugin_file);
-        // Check if assets exist in the plugin root.
-        if (is_dir($plugin_dir . 'assets')) {
-            $assets_path = $plugin_dir . 'assets';
-            $assets_url = $plugin_url . 'assets';
-        } else {
-            // Fall back to vendor directory.
-            $assets_path = $plugin_dir . 'vendor/kevinpirnie/kp-wp-starter-framework/assets';
-            $assets_url = $plugin_url . 'vendor/kevinpirnie/kp-wp-starter-framework/assets';
-        }
-
-        return self::bootstrap(
-            array(
-                'assets_url'  => $assets_url,
-                'assets_path' => $assets_path,
-            )
-        );
-    }
-
-    /**
-     * Bootstrap the framework for use in a theme.
-     *
-     * Automatically configures asset paths relative to the current theme directory.
-     *
-     * @since  1.0.0
-     * @param  string $subfolder Optional subfolder within the theme for assets.
-     *                           Defaults to checking common locations.
-     * @return Framework         The initialized Framework instance.
-     */
-    public static function bootstrapTheme(string $subfolder = ''): Framework
-    {
-        $theme_dir = get_stylesheet_directory();
-        $theme_url = get_stylesheet_directory_uri();
-        // Determine assets location.
-        if (! empty($subfolder)) {
-            // Use specified subfolder.
-            $assets_path = $theme_dir . '/' . trim($subfolder, '/') . '/assets';
-            $assets_url = $theme_url . '/' . trim($subfolder, '/') . '/assets';
-        } elseif (is_dir($theme_dir . '/assets/kp-wsf')) {
-            // Check for dedicated framework assets folder.
-            $assets_path = $theme_dir . '/assets/kp-wsf';
-            $assets_url = $theme_url . '/assets/kp-wsf';
-        } elseif (is_dir($theme_dir . '/vendor/kevinpirnie/kp-wp-starter-framework/assets')) {
-            // Fall back to vendor directory.
-            $assets_path = $theme_dir . '/vendor/kevinpirnie/kp-wp-starter-framework/assets';
-            $assets_url = $theme_url . '/vendor/kevinpirnie/kp-wp-starter-framework/assets';
-        } else {
-            // Last resort: use theme's main assets folder.
-            $assets_path = $theme_dir . '/assets';
-            $assets_url = $theme_url . '/assets';
-        }
-
-        return self::bootstrap(
-            array(
-                'assets_url'  => $assets_url,
-                'assets_path' => $assets_path,
-            )
-        );
-    }
-
-    /**
-     * Get the framework's base directory path.
-     *
-     * @since  1.0.0
-     * @return string The base directory path (without trailing slash).
-     */
-    public static function getBasePath(): string
-    {
-        return dirname(__DIR__);
-    }
-
-    /**
-     * Get the framework's src directory path.
-     *
-     * @since  1.0.0
-     * @return string The src directory path (without trailing slash).
-     */
-    public static function getSrcPath(): string
-    {
-        return __DIR__;
+        spl_autoload_register(array( self::class, 'autoload' ));
+        self::$autoloader_registered = true;
     }
 
     /**
@@ -229,7 +187,7 @@ final class Loader
      * @param  string $min_php_version Minimum PHP version required.
      * @return array                   Array with 'valid' bool and 'errors' array.
      */
-    public static function checkRequirements(string $min_wp_version = '6.8', string $min_php_version = '8.2'): array
+    private static function checkRequirements(string $min_wp_version = '6.8', string $min_php_version = '8.4'): array
     {
         $errors = array();
         // Check PHP version.
@@ -264,7 +222,7 @@ final class Loader
      * @param  array $errors Array of error messages to display.
      * @return void
      */
-    public static function displayRequirementErrors(array $errors): void
+    private static function displayRequirementErrors(array $errors): void
     {
         add_action(
             'admin_notices',
@@ -283,23 +241,32 @@ final class Loader
     }
 
     /**
-     * Quick initialization with requirements check.
-     *
-     * Combines requirements checking with bootstrap for a simple one-liner initialization.
-     * Returns null if requirements are not met (and displays admin notice).
+     * Convert a filesystem path to a URL.
      *
      * @since  1.0.0
-     * @param  array $options Optional configuration options passed to bootstrap().
-     * @return Framework|null The Framework instance or null if requirements not met.
+     * @param  string $path The filesystem path.
+     * @return string       The URL.
      */
-    public static function init(array $options = array()): ?Framework
+    private static function pathToUrl(string $path): string
     {
-        $requirements = self::checkRequirements();
-        if (! $requirements['valid']) {
-            self::displayRequirementErrors($requirements['errors']);
-            return null;
+        // Normalize path separators.
+        $path = wp_normalize_path($path);
+        $content_dir = wp_normalize_path(WP_CONTENT_DIR);
+        $content_url = content_url();
+
+        // Replace content dir with content URL.
+        if (strpos($path, $content_dir) === 0) {
+            return str_replace($content_dir, $content_url, $path);
         }
 
-        return self::bootstrap($options);
+        // Fallback: try ABSPATH.
+        $abspath = wp_normalize_path(ABSPATH);
+        $site_url = site_url();
+
+        if (strpos($path, $abspath) === 0) {
+            return str_replace($abspath, $site_url . '/', $path);
+        }
+
+        return $path;
     }
 }

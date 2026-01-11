@@ -6,7 +6,7 @@
  * Provides rendering for all standard WordPress form field types.
  * Handles field HTML output for options pages and meta boxes.
  *
- * @package     KP\WPStarterFramework
+ * @package     KP\WPFieldFramework
  * @author      Kevin Pirnie <iam@kevinpirnie.com>
  * @copyright   2025 Kevin Pirnie
  * @license     MIT
@@ -15,7 +15,7 @@
 
 declare(strict_types=1);
 
-namespace KP\WPStarterFramework;
+namespace KP\WPFieldFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;

@@ -6,7 +6,7 @@
  * Handles creation and registration of WordPress admin options pages
  * with support for sections, tabs, and all field types.
  *
- * @package     KP\WPStarterFramework
+ * @package     KP\WPFieldFramework
  * @author      Kevin Pirnie <iam@kevinpirnie.com>
  * @copyright   2025 Kevin Pirnie
  * @license     MIT
@@ -15,7 +15,7 @@
 
 declare(strict_types=1);
 
-namespace KP\WPStarterFramework;
+namespace KP\WPFieldFramework;
 
 // Prevent direct access.
 defined('ABSPATH') || exit;
