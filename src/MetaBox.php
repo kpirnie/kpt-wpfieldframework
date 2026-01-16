@@ -478,5 +478,4 @@ class MetaBox
     {
         return $this->storage->deleteMeta($post_id, $field_id);
     }
-
 }

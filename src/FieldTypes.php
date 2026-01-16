@@ -186,7 +186,6 @@ class FieldTypes
 
         $html = '';
         if ($context === 'options') {
-
             // Options page table row format.
             $html .= '<tr class="options-row">';
             $html .= '<th scope="row">';
@@ -198,11 +197,11 @@ class FieldTypes
             $html .= $this->renderDescription($field);
             $html .= '</td>';
             $html .= '</tr>';
-} else {
+        } else {
             // Meta box / user profile format.
             $conditional_attrs = $this->buildConditionalAttributes($field);
             $conditional_class = ! empty($field['conditional']) ? ' kp-wsf-conditional-field' : '';
-            $html .= '<div class="kp-wsf-field kp-wsf-field--' . esc_attr($field['type']) . $conditional_class . '"' . $conditional_attrs . '>';            
+            $html .= '<div class="kp-wsf-field kp-wsf-field--' . esc_attr($field['type']) . $conditional_class . '"' . $conditional_attrs . '>';
             $html .= '<div class="kp-wsf-field__label">';
             $html .= $this->renderLabel($field);
             $html .= $this->renderSublabel($field);
@@ -698,15 +697,16 @@ class FieldTypes
             $checked = in_array((string) $opt_value, array_map('strval', $value), true) ? ' checked="checked"' : '';
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
             $html .= sprintf(
-                '<label for="%s"><input type="checkbox" id="%s" name="%s[]" value="%s"%s%s /> %s</label>%s', 
-                esc_attr($opt_id), 
-                esc_attr($opt_id), 
-                esc_attr($field['name']), 
-                esc_attr($opt_value), 
-                $checked, 
+                '<label for="%s"><input type="checkbox" id="%s" name="%s[]" value="%s"%s%s /> %s</label>%s',
+                esc_attr($opt_id),
+                esc_attr($opt_id),
+                esc_attr($field['name']),
+                esc_attr($opt_value),
+                $checked,
                 $this->buildAttributes($field),
                 esc_html($opt_label),
-                ($is_inline) ? '' : '<br />');
+                ($is_inline) ? '' : '<br />'
+            );
         }
 
         $html .= '</fieldset>';
@@ -730,15 +730,16 @@ class FieldTypes
             $checked = checked($value, $opt_value, false);
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
             $html .= sprintf(
-                '<label for="%s"><input type="radio" id="%s" name="%s" value="%s"%s%s /> %s</label>%s', 
-                esc_attr($opt_id), 
-                esc_attr($opt_id), 
-                esc_attr($field['name']), 
-                esc_attr($opt_value), 
-                $checked, 
+                '<label for="%s"><input type="radio" id="%s" name="%s" value="%s"%s%s /> %s</label>%s',
+                esc_attr($opt_id),
+                esc_attr($opt_id),
+                esc_attr($field['name']),
+                esc_attr($opt_value),
+                $checked,
                 $this->buildAttributes($field),
                 esc_html($opt_label),
-                ($is_inline) ? '' : '<br />');
+                ($is_inline) ? '' : '<br />'
+            );
         }
 
         $html .= '</fieldset>';
@@ -758,7 +759,7 @@ class FieldTypes
         $checked = filter_var($value, FILTER_VALIDATE_BOOLEAN);
         $on_label = $field['on_label'] ?? __('On', 'kp-wsf');
         $off_label = $field['off_label'] ?? __('Off', 'kp-wsf');
-        
+
         $html = '<div class="kp-wsf-switch-field">';
         $html .= sprintf('<span class="kp-wsf-switch-label kp-wsf-switch-label--off">%s</span>', esc_html($off_label));
         $html .= '<label class="kp-wsf-switch">';
@@ -772,7 +773,7 @@ class FieldTypes
         $html .= '</label>';
         $html .= sprintf('<span class="kp-wsf-switch-label kp-wsf-switch-label--on">%s</span>', esc_html($on_label));
         $html .= '</div>';
-        
+
         return $html;
     }
 

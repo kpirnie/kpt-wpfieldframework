@@ -279,8 +279,8 @@ final class Framework
         wp_enqueue_script('jquery-ui-datepicker');
         wp_enqueue_style('jquery-ui-datepicker-style', '//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css', array(), '1.13.2');
         // Enqueue jQuery Select2
-        wp_enqueue_style( 'select2-css', 'https://cdn.jsdelivr.net/npm/select2@latest/dist/css/select2.min.css', array(), '4.1.0' );
-        wp_enqueue_script( 'select2-js', 'https://cdn.jsdelivr.net/npm/select2@latest/dist/js/select2.min.js', array( 'jquery' ), '4.1.0', true );
+        wp_enqueue_style('select2-css', 'https://cdn.jsdelivr.net/npm/select2@latest/dist/css/select2.min.css', array(), '4.1.0');
+        wp_enqueue_script('select2-js', 'https://cdn.jsdelivr.net/npm/select2@latest/dist/js/select2.min.js', array( 'jquery' ), '4.1.0', true);
         // Enqueue code editor if available (WP 4.9+).
         if (function_exists('wp_enqueue_code_editor')) {
             wp_enqueue_code_editor(array( 'type' => 'text/html' ));
