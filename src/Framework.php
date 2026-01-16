@@ -286,6 +286,12 @@ final class Framework
             wp_enqueue_code_editor(array( 'type' => 'text/html' ));
         }
 
+        // Framework admin styles.
+        $style_path = $this->assets_path . '/css/wsf-admin.css';
+        if (file_exists($style_path)) {
+            wp_enqueue_style('kp-wsf-admin', $this->assets_url . '/css/wsf-admin.css', array(), self::VERSION);
+        }
+
         // Framework admin script.
         $script_path = $this->assets_path . '/js/wsf-admin.js';
         if (file_exists($script_path)) {

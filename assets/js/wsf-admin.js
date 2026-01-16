@@ -44,6 +44,7 @@
             this.initGallery();
             this.initLinkSelector();
             this.initMultiSelector();
+            this.initConditionals();
         },
 
         /**
@@ -53,7 +54,7 @@
          * @return {void}
          */
         initMultiSelector: function () {
-            $("select[multiple='multiple']").select2();
+            $("select[multiple='multiple']").select2({ width: '75%', placeholder: "Select an option..." });
         },
 
         // =====================================================================
@@ -894,6 +895,274 @@
                     $value.text($range.val());
                 }
             });
+        },
+        // =====================================================================
+        // Conditional Fields
+        // =====================================================================
+
+        /**
+         * Initialize conditional field logic.
+         *
+         * @since 1.0.0
+         * @return {void}
+         */
+        initConditionals: function() {
+            const self = this;
+
+            // Find all conditional fields and set up listeners.
+            $('[data-kp-wsf-conditional]').each(function() {
+                const $field = $(this).closest('.kp-wsf-field, .kp-wsf-field-row, tr');
+                const conditional = $(this).data('kp-wsf-conditional');
+
+                if (!conditional) {
+                    return;
+                }
+
+                self.setupConditionalListeners($field, conditional);
+                self.evaluateConditional($field, conditional);
+            });
+        },
+
+        /**
+         * Set up event listeners for conditional field dependencies.
+         *
+         * @since 1.0.0
+         * @param {jQuery} $field      The conditional field element.
+         * @param {Object} conditional The conditional configuration.
+         * @return {void}
+         */
+        setupConditionalListeners: function($field, conditional) {
+            const self = this;
+            const fieldIds = self.getConditionalFieldIds(conditional);
+
+            fieldIds.forEach(function(fieldId) {
+                // Find the controlling field by ID or name.
+                const $controller = self.findControllerField(fieldId, $field);
+
+                if ($controller.length) {
+                    $controller.on('change input', function() {
+                        self.evaluateConditional($field, conditional);
+                    });
+                }
+            });
+        },
+
+        /**
+         * Extract all field IDs from a conditional configuration.
+         *
+         * @since 1.0.0
+         * @param {Object} conditional The conditional configuration.
+         * @return {Array} Array of field IDs.
+         */
+        getConditionalFieldIds: function(conditional) {
+            const ids = [];
+
+            if (conditional.AND) {
+                conditional.AND.forEach(function(condition) {
+                    if (condition.field) {
+                        ids.push(condition.field);
+                    }
+                });
+            }
+
+            if (conditional.OR) {
+                conditional.OR.forEach(function(condition) {
+                    if (condition.field) {
+                        ids.push(condition.field);
+                    }
+                });
+            }
+
+            // Single condition without AND/OR.
+            if (conditional.field) {
+                ids.push(conditional.field);
+            }
+
+            return ids;
+        },
+
+        /**
+         * Find the controller field element.
+         *
+         * @since 1.0.0
+         * @param {string} fieldId The field ID to find.
+         * @param {jQuery} $field  The conditional field for context.
+         * @return {jQuery} The controller field element.
+         */
+        findControllerField: function(fieldId, $field) {
+            // Try direct ID match.
+            let $controller = $('#' + fieldId);
+
+            if ($controller.length) {
+                return $controller;
+            }
+
+            // Try finding by name attribute (for options pages with array notation).
+            $controller = $('[name$="[' + fieldId + ']"]');
+
+            if ($controller.length) {
+                return $controller;
+            }
+
+            // Try finding within the same context (repeater, meta box, etc.).
+            const $context = $field.closest('.kp-wsf-meta-box, .kp-wsf-repeater, .kp-wsf-options-form, form');
+            $controller = $context.find('[id="' + fieldId + '"], [name$="[' + fieldId + ']"]');
+
+            return $controller;
+        },
+
+        /**
+         * Evaluate a conditional and show/hide the field.
+         *
+         * @since 1.0.0
+         * @param {jQuery} $field      The conditional field element.
+         * @param {Object} conditional The conditional configuration.
+         * @return {void}
+         */
+        evaluateConditional: function($field, conditional) {
+            const self = this;
+            let result = false;
+
+            if (conditional.AND) {
+                // All conditions must be true.
+                result = conditional.AND.every(function(condition) {
+                    return self.evaluateCondition(condition, $field);
+                });
+            } else if (conditional.OR) {
+                // At least one condition must be true.
+                result = conditional.OR.some(function(condition) {
+                    return self.evaluateCondition(condition, $field);
+                });
+            } else if (conditional.field) {
+                // Single condition.
+                result = self.evaluateCondition(conditional, $field);
+            }
+
+            // Show or hide the field.
+            if (result) {
+                $field.slideDown(200).removeClass('kp-wsf-conditional-hidden');
+            } else {
+                $field.slideUp(200).addClass('kp-wsf-conditional-hidden');
+            }
+        },
+
+        /**
+         * Evaluate a single condition.
+         *
+         * @since 1.0.0
+         * @param {Object} condition The condition to evaluate.
+         * @param {jQuery} $field    The conditional field for context.
+         * @return {boolean} Whether the condition is met.
+         */
+        evaluateCondition: function(condition, $field) {
+            const self = this;
+            const $controller = self.findControllerField(condition.field, $field);
+
+            if (!$controller.length) {
+                return false;
+            }
+
+            let controllerValue = self.getFieldValue($controller);
+            const targetValue = condition.value;
+            const operator = condition.condition || '==';
+
+            return self.compareValues(controllerValue, targetValue, operator);
+        },
+
+        /**
+         * Get the current value of a field.
+         *
+         * @since 1.0.0
+         * @param {jQuery} $field The field element.
+         * @return {mixed} The field value.
+         */
+        getFieldValue: function($field) {
+            const type = $field.attr('type');
+
+            if (type === 'checkbox') {
+                return $field.is(':checked');
+            }
+
+            if (type === 'radio') {
+                return $field.filter(':checked').val();
+            }
+
+            if ($field.is('select[multiple]')) {
+                return $field.val() || [];
+            }
+
+            return $field.val();
+        },
+
+        /**
+         * Compare two values using an operator.
+         *
+         * @since 1.0.0
+         * @param {mixed}  actual   The actual value.
+         * @param {mixed}  expected The expected value.
+         * @param {string} operator The comparison operator.
+         * @return {boolean} The comparison result.
+         */
+        compareValues: function(actual, expected, operator) {
+            // Handle boolean comparisons.
+            if (typeof expected === 'boolean') {
+                actual = !!actual;
+            }
+
+            switch (operator) {
+                case '==':
+                case '===':
+                    return actual == expected;
+
+                case '!=':
+                case '!==':
+                    return actual != expected;
+
+                case '>':
+                    return parseFloat(actual) > parseFloat(expected);
+
+                case '<':
+                    return parseFloat(actual) < parseFloat(expected);
+
+                case '>=':
+                    return parseFloat(actual) >= parseFloat(expected);
+
+                case '<=':
+                    return parseFloat(actual) <= parseFloat(expected);
+
+                case 'IN':
+                    if (Array.isArray(expected)) {
+                        return expected.includes(actual);
+                    }
+                    return String(expected).split(',').map(s => s.trim()).includes(actual);
+
+                case 'NOT_IN':
+                    if (Array.isArray(expected)) {
+                        return !expected.includes(actual);
+                    }
+                    return !String(expected).split(',').map(s => s.trim()).includes(actual);
+
+                case 'CONTAINS':
+                    if (Array.isArray(actual)) {
+                        return actual.includes(expected);
+                    }
+                    return String(actual).indexOf(expected) !== -1;
+
+                case 'NOT_CONTAINS':
+                    if (Array.isArray(actual)) {
+                        return !actual.includes(expected);
+                    }
+                    return String(actual).indexOf(expected) === -1;
+
+                case 'EMPTY':
+                    return !actual || actual === '' || (Array.isArray(actual) && actual.length === 0);
+
+                case 'NOT_EMPTY':
+                    return actual && actual !== '' && !(Array.isArray(actual) && actual.length === 0);
+
+                default:
+                    return actual == expected;
+            }
         }
     };
 

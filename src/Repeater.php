@@ -114,8 +114,6 @@ class Repeater
         $html .= '</div>';
         // End repeater.
 
-        // Output inline styles (once).
-        $html .= $this->getInlineStyles();
         return $html;
     }
 
@@ -217,11 +215,14 @@ class Repeater
             return $this->field_types->render($field, $value);
         }
 
-        // Standard field with label.
+        // Standard field with label and sublabel.
         $html = '<div class="kp-wsf-repeater__field kp-wsf-repeater__field--' . esc_attr($type) . '">';
         if (! empty($field['label'])) {
             $required = ! empty($field['required']) ? ' <span class="required">*</span>' : '';
             $html .= sprintf('<label for="%s">%s%s</label>', esc_attr($field['id']), esc_html($field['label']), $required);
+        }
+        if (! empty($field['sublabel'])) {
+            $html .= sprintf('<span class="kp-wsf-sublabel">%s</span>', wp_kses_post($field['sublabel']));
         }
 
         $html .= '<div class="kp-wsf-repeater__field-input">';
@@ -273,146 +274,6 @@ class Repeater
 
         // Re-index array.
         return array_values($sanitized);
-    }
-
-    /**
-     * Get inline styles for the repeater.
-     *
-     * @since  1.0.0
-     * @return string The style tag with CSS.
-     */
-    private function getInlineStyles(): string
-    {
-        static $styles_output = false;
-        if ($styles_output) {
-            return '';
-        }
-
-        $styles_output = true;
-        return '
-        <style>
-            .kp-wsf-repeater {
-                border: 1px solid #c3c4c7;
-                background: #f6f7f7;
-                padding: 0;
-                margin-bottom: 15px;
-            }
-            .kp-wsf-repeater__header {
-                padding: 10px 15px;
-                border-bottom: 1px solid #c3c4c7;
-                background: #fff;
-            }
-            .kp-wsf-repeater__header h4 {
-                margin: 0;
-                font-size: 14px;
-            }
-            .kp-wsf-repeater__rows {
-                padding: 10px;
-            }
-            .kp-wsf-repeater__row {
-                background: #fff;
-                border: 1px solid #c3c4c7;
-                margin-bottom: 10px;
-            }
-            .kp-wsf-repeater__row:last-child {
-                margin-bottom: 0;
-            }
-            .kp-wsf-repeater__row--template {
-                display: none;
-            }
-            .kp-wsf-repeater__row-header {
-                display: flex;
-                align-items: center;
-                padding: 10px;
-                background: #f6f7f7;
-                border-bottom: 1px solid #c3c4c7;
-                cursor: pointer;
-            }
-            .kp-wsf-repeater__row--collapsed .kp-wsf-repeater__row-header {
-                border-bottom: none;
-            }
-            .kp-wsf-repeater__drag {
-                cursor: move;
-                color: #c3c4c7;
-                margin-right: 10px;
-            }
-            .kp-wsf-repeater__drag:hover {
-                color: #2271b1;
-            }
-            .kp-wsf-repeater__row-title {
-                flex: 1;
-                font-weight: 600;
-            }
-            .kp-wsf-repeater__row-number {
-                font-weight: normal;
-                color: #646970;
-            }
-            .kp-wsf-repeater__row-controls {
-                display: flex;
-                gap: 5px;
-            }
-            .kp-wsf-repeater__row-controls button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                padding: 0;
-                color: #646970;
-            }
-            .kp-wsf-repeater__row-controls button:hover {
-                color: #2271b1;
-            }
-            .kp-wsf-repeater__remove:hover {
-                color: #d63638 !important;
-            }
-            .kp-wsf-repeater__toggle .dashicons {
-                transition: transform 0.2s;
-            }
-            .kp-wsf-repeater__row--collapsed .kp-wsf-repeater__toggle .dashicons {
-                transform: rotate(-90deg);
-            }
-            .kp-wsf-repeater__row-content {
-                padding: 15px;
-            }
-            .kp-wsf-repeater__row--collapsed .kp-wsf-repeater__row-content {
-                display: none;
-            }
-            .kp-wsf-repeater__field {
-                margin-bottom: 15px;
-            }
-            .kp-wsf-repeater__field:last-child {
-                margin-bottom: 0;
-            }
-            .kp-wsf-repeater__field > label {
-                display: block;
-                font-weight: 600;
-                margin-bottom: 5px;
-            }
-            .kp-wsf-repeater__field .required {
-                color: #d63638;
-            }
-            .kp-wsf-repeater__field .description {
-                margin-top: 5px;
-                color: #646970;
-            }
-            .kp-wsf-repeater__footer {
-                padding: 10px 15px;
-                border-top: 1px solid #c3c4c7;
-                background: #fff;
-            }
-            .kp-wsf-repeater__add {
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-            }
-            .kp-wsf-repeater.ui-sortable-helper {
-                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-            }
-            .kp-wsf-repeater__row.ui-sortable-placeholder {
-                visibility: visible !important;
-                background: #f0f6fc;
-                border: 2px dashed #2271b1;
-            }
-        </style>';
     }
 
     /**

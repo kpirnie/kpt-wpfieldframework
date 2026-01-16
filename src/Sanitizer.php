@@ -62,7 +62,7 @@ class Sanitizer
             'link'                      => $this->sanitizeLink($value),
             'select', 'radio'           => $this->sanitizeSelect($value, $field),
             'multiselect', 'checkboxes' => $this->sanitizeMultiSelect($value, $field),
-            'checkbox'                  => $this->sanitizeCheckbox($value),
+            'checkbox', 'switch'        => $this->sanitizeCheckbox($value),
             'wysiwyg'                   => $this->sanitizeWysiwyg($value),
             'code'                      => $this->sanitizeCode($value),
             'color'                     => $this->sanitizeColor($value),

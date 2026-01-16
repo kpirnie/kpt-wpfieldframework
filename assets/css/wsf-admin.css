@@ -1,0 +1,420 @@
+/**
+ * KP WP Starter Framework - Admin Styles
+ *
+ * @package     KP\WPStarterFramework
+ * @author      Kevin Pirnie <iam@kevinpirnie.com>
+ * @copyright   2025 Kevin Pirnie
+ * @license     MIT
+ * @since       1.0.0
+ */
+
+/* ==========================================================================
+   Sublabel
+   ========================================================================== */
+
+.kp-wsf-sublabel {
+    display: block;
+    font-weight: normal;
+    font-size: 12px;
+    color: #646970;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   Meta Box Layout
+   ========================================================================== */
+
+.kp-wsf-meta-box {
+    padding: 12px 0;
+}
+
+.kp-wsf-field {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.kp-wsf-field__label {
+    flex: 0 0 200px;
+    padding-right: 10px;
+    padding-top: 5px;
+    font-weight: 600;
+}
+
+.kp-wsf-field__label label {
+    display: block;
+}
+
+.kp-wsf-field__input {
+    flex: 1;
+    min-width: 300px;
+}
+
+.kp-wsf-field__input .description {
+    margin-top: 5px;
+    color: #646970;
+}
+
+.kp-wsf-field .required {
+    color: #d63638;
+}
+
+/* ==========================================================================
+   Layout Fields
+   ========================================================================== */
+
+.kp-wsf-heading {
+    margin: 20px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.kp-wsf-separator {
+    margin: 20px 0;
+    border: 0;
+    border-top: 1px solid #c3c4c7;
+}
+
+.kp-wsf-error {
+    color: #d63638;
+    font-style: italic;
+}
+
+/* ==========================================================================
+   Image & Gallery Fields
+   ========================================================================== */
+
+.kp-wsf-image-preview img,
+.kp-wsf-gallery-item img {
+    max-width: 150px;
+    height: auto;
+    border: 1px solid #c3c4c7;
+    padding: 3px;
+    background: #fff;
+}
+
+.kp-wsf-gallery-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.kp-wsf-gallery-item {
+    position: relative;
+}
+
+.kp-wsf-gallery-remove {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #d63638;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+}
+
+/* ==========================================================================
+   Range Field
+   ========================================================================== */
+
+.kp-wsf-range-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kp-wsf-range-value {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Switch Field
+   ========================================================================== */
+
+.kp-wsf-switch-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kp-wsf-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.kp-wsf-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.kp-wsf-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.kp-wsf-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.kp-wsf-switch input:checked + .kp-wsf-switch-slider {
+    background-color: #2271b1;
+}
+
+.kp-wsf-switch input:focus + .kp-wsf-switch-slider {
+    box-shadow: 0 0 1px #2271b1;
+}
+
+.kp-wsf-switch input:checked + .kp-wsf-switch-slider:before {
+    transform: translateX(24px);
+}
+
+.kp-wsf-switch-label {
+    font-size: 13px;
+    color: #646970;
+}
+
+/* ==========================================================================
+   Nav Menu Fields
+   ========================================================================== */
+
+.kp-wsf-nav-menu-fields {
+    padding: 10px 0;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+.kp-wsf-nav-menu-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.kp-wsf-nav-menu-field {
+    margin-bottom: 10px;
+}
+
+.kp-wsf-nav-menu-field label {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.kp-wsf-nav-menu-field .description {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: #646970;
+}
+
+/* ==========================================================================
+   Group Field
+   ========================================================================== */
+
+.kp-wsf-group {
+    border: 1px solid #c3c4c7;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f6f7f7;
+}
+
+.kp-wsf-group-title {
+    margin: 0 0 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+/* ==========================================================================
+   Repeater Field
+   ========================================================================== */
+
+.kp-wsf-repeater {
+    border: 1px solid #c3c4c7;
+    background: #f6f7f7;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+.kp-wsf-repeater__header {
+    padding: 10px 15px;
+    border-bottom: 1px solid #c3c4c7;
+    background: #fff;
+}
+
+.kp-wsf-repeater__header h4 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.kp-wsf-repeater__rows {
+    padding: 10px;
+}
+
+.kp-wsf-repeater__row {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    margin-bottom: 10px;
+}
+
+.kp-wsf-repeater__row:last-child {
+    margin-bottom: 0;
+}
+
+.kp-wsf-repeater__row--template {
+    display: none;
+}
+
+.kp-wsf-repeater__row-header {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
+    cursor: pointer;
+}
+
+.kp-wsf-repeater__row--collapsed .kp-wsf-repeater__row-header {
+    border-bottom: none;
+}
+
+.kp-wsf-repeater__drag {
+    cursor: move;
+    color: #c3c4c7;
+    margin-right: 10px;
+}
+
+.kp-wsf-repeater__drag:hover {
+    color: #2271b1;
+}
+
+.kp-wsf-repeater__row-title {
+    flex: 1;
+    font-weight: 600;
+}
+
+.kp-wsf-repeater__row-number {
+    font-weight: normal;
+    color: #646970;
+}
+
+.kp-wsf-repeater__row-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.kp-wsf-repeater__row-controls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #646970;
+}
+
+.kp-wsf-repeater__row-controls button:hover {
+    color: #2271b1;
+}
+
+.kp-wsf-repeater__remove:hover {
+    color: #d63638 !important;
+}
+
+.kp-wsf-repeater__toggle .dashicons {
+    transition: transform 0.2s;
+}
+
+.kp-wsf-repeater__row--collapsed .kp-wsf-repeater__toggle .dashicons {
+    transform: rotate(-90deg);
+}
+
+.kp-wsf-repeater__row-content {
+    padding: 15px;
+}
+
+.kp-wsf-repeater__row--collapsed .kp-wsf-repeater__row-content {
+    display: none;
+}
+
+.kp-wsf-repeater__field {
+    margin-bottom: 15px;
+}
+
+.kp-wsf-repeater__field:last-child {
+    margin-bottom: 0;
+}
+
+.kp-wsf-repeater__field > label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.kp-wsf-repeater__field .required {
+    color: #d63638;
+}
+
+.kp-wsf-repeater__field .description {
+    margin-top: 5px;
+    color: #646970;
+}
+
+.kp-wsf-repeater__footer {
+    padding: 10px 15px;
+    border-top: 1px solid #c3c4c7;
+    background: #fff;
+}
+
+.kp-wsf-repeater__add {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.kp-wsf-repeater.ui-sortable-helper {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+.kp-wsf-repeater__row.ui-sortable-placeholder {
+    visibility: visible !important;
+    background: #f0f6fc;
+    border: 2px dashed #2271b1;
+}
+/* ==========================================================================
+   Conditional Fields
+   ========================================================================== */
+
+.kp-wsf-conditional-field {
+    transition: opacity 0.2s ease;
+}
+
+.kp-wsf-conditional-hidden {
+    display: none !important;
+}
+
+.kp-wsf-conditional-data {
+    display: none;
+}

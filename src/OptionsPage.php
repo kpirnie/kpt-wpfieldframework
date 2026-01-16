@@ -299,9 +299,19 @@ class OptionsPage
             return;
         }
 
+        $label = $field['label'] ?? '';
+        if (! empty($field['sublabel'])) {
+            $label .= sprintf('<br /><span class="kp-wsf-sublabel">%s</span>', wp_kses_post($field['sublabel']));
+        }
+
+        $row_class = 'kp-wsf-field-row kp-wsf-field-row--' . ( $field['type'] ?? 'text' );
+        if (! empty($field['conditional'])) {
+            $row_class .= ' kp-wsf-conditional-field';
+        }
+
         add_settings_field(
             $field['id'],
-            $field['label'] ?? '',
+            $label,
             function () use ($field) {
 
                 $this->renderField($field);
@@ -309,10 +319,12 @@ class OptionsPage
             $this->config['menu_slug'],
             $section_id,
             array(
-                'label_for' => $field['id'],
-                'class'     => 'kp-wsf-field-row kp-wsf-field-row--' . ( $field['type'] ?? 'text' ),
+                'label_for'  => $field['id'],
+                'class'      => $row_class,
+                'conditional' => ! empty($field['conditional']) ? $field['conditional'] : null,
             )
         );
+
     }
 
     /**
@@ -481,13 +493,22 @@ class OptionsPage
      */
     private function renderField(array $field): void
     {
+
+        // Output conditional data attribute if present.
+        if (! empty($field['conditional'])) {
+            printf('<span class="kp-wsf-conditional-data" data-kp-wsf-conditional="%s"></span>', esc_attr(wp_json_encode($field['conditional'])));
+        }
+        
         // Get current value from options.
         $options = $this->storage->getOption($this->config['option_key'], array());
         $value = $options[ $field['id'] ] ?? ( $field['default'] ?? null );
+        
         // Set the field name to use array notation for the option.
         $field['name'] = sprintf('%s[%s]', $this->config['option_key'], $field['id']);
+        
         // Render the field.
         echo $this->field_types->render($field, $value);
+        
         // Render description if present.
         if (! empty($field['description'])) {
             printf('<p class="description">%s</p>', wp_kses_post($field['description']));
