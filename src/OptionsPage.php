@@ -395,10 +395,27 @@ class OptionsPage
                 do_settings_sections($this->config['menu_slug']);
             }
 
-            submit_button(__('Save Settings', 'kp-wsf'));
+            submit_button($this->config['save_button'] ?? __('Save Settings', 'kp-wsf'));
             ?>
         </form>
         <?php
+
+        // render the footer test, if it's set.. allows some html
+        if($this->config['footer_text']):
+            echo wp_kses( $this->config['footer_text'], array(
+                'a' => array(
+                    'href' => true,
+                    'title' => true,
+                    'target' => true,
+                    'class' => true,
+                ),
+                'br' => array('class' => true,),
+                'em' => array('class' => true,),
+                'strong' => array('class' => true,),
+                'p' => array('class' => true,),
+                'div' => array('class' => true,),
+            ) );
+        endif;
     }
 
     /**

@@ -653,11 +653,22 @@ class FieldTypes
     private function renderCheckboxes(array $field, mixed $value): string
     {
         $value = is_array($value) ? $value : array();
-        $html = '<fieldset class="kp-wsf-checkboxes">';
+        $is_inline = filter_var($field['inline'], FILTER_VALIDATE_BOOLEAN);
+        $inliner = ($is_inline) ? ' style="display: flex;gap: 20px;"' : '';
+        $html = '<fieldset class="kp-wsf-checkboxes"' . $inliner . '>';
         foreach ($field['options'] as $opt_value => $opt_label) {
             $checked = in_array((string) $opt_value, array_map('strval', $value), true) ? ' checked="checked"' : '';
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
-            $html .= sprintf('<label for="%s"><input type="checkbox" id="%s" name="%s[]" value="%s"%s /> %s</label><br />', esc_attr($opt_id), esc_attr($opt_id), esc_attr($field['name']), esc_attr($opt_value), $checked, esc_html($opt_label));
+            $html .= sprintf(
+                '<label for="%s"><input type="checkbox" id="%s" name="%s[]" value="%s"%s%s /> %s</label>%s', 
+                esc_attr($opt_id), 
+                esc_attr($opt_id), 
+                esc_attr($field['name']), 
+                esc_attr($opt_value), 
+                $checked, 
+                $this->buildAttributes($field),
+                esc_html($opt_label),
+                ($is_inline) ? '' : '<br />');
         }
 
         $html .= '</fieldset>';
@@ -674,11 +685,22 @@ class FieldTypes
      */
     private function renderRadio(array $field, mixed $value): string
     {
-        $html = '<fieldset class="kp-wsf-radios">';
+        $is_inline = filter_var($field['inline'], FILTER_VALIDATE_BOOLEAN);
+        $inliner = ($is_inline) ? ' style="display: flex;gap: 20px;"' : '';
+        $html = '<fieldset class="kp-wsf-radios"' . $inliner . '>';
         foreach ($field['options'] as $opt_value => $opt_label) {
             $checked = checked($value, $opt_value, false);
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
-            $html .= sprintf('<label for="%s"><input type="radio" id="%s" name="%s" value="%s"%s /> %s</label><br />', esc_attr($opt_id), esc_attr($opt_id), esc_attr($field['name']), esc_attr($opt_value), $checked, esc_html($opt_label));
+            $html .= sprintf(
+                '<label for="%s"><input type="radio" id="%s" name="%s" value="%s"%s%s /> %s</label>%s', 
+                esc_attr($opt_id), 
+                esc_attr($opt_id), 
+                esc_attr($field['name']), 
+                esc_attr($opt_value), 
+                $checked, 
+                $this->buildAttributes($field),
+                esc_html($opt_label),
+                ($is_inline) ? '' : '<br />');
         }
 
         $html .= '</fieldset>';
