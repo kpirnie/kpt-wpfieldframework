@@ -1,6 +1,3 @@
-**File: `readme.md`**
-
-```markdown
 # KPT WP Field Framework
 
 A PHP framework for creating WordPress Options Pages, Meta Boxes, and Gutenberg Blocks with repeatable field groups.
