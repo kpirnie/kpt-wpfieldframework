@@ -174,6 +174,7 @@ class FieldTypes
     public function renderRow(array $field, mixed $value = null, string $context = 'meta'): string
     {
         $field = wp_parse_args($field, $this->field_defaults);
+
         // Skip row wrapper for certain types.
         $no_wrapper_types = array( 'hidden', 'heading', 'separator', 'html' );
         if (in_array($field['type'], $no_wrapper_types, true)) {
@@ -182,10 +183,15 @@ class FieldTypes
 
         $html = '';
         if ($context === 'options') {
+
             // Options page table row format.
-            $html .= '<tr>';
+            $html .= '<tr class="options-row">';
             $html .= '<th scope="row">';
             $html .= $this->renderLabel($field);
+            // if a sublabel exists
+            if($field['sublabel']) {
+                $html .= '<small>'.esc_html($field['sublabel']).'</small>';
+            }
             $html .= '</th>';
             $html .= '<td>';
             $html .= $this->render($field, $value);
@@ -193,10 +199,15 @@ class FieldTypes
             $html .= '</td>';
             $html .= '</tr>';
         } else {
+            
             // Meta box / user profile format.
             $html .= '<div class="kp-wsf-field kp-wsf-field--' . esc_attr($field['type']) . '">';
             $html .= '<div class="kp-wsf-field__label">';
             $html .= $this->renderLabel($field);
+            // if a sublabel exists
+            if($field['sublabel']) {
+                $html .= '<small>'.esc_html($field['sublabel']).'</small>';
+            }
             $html .= '</div>';
             $html .= '<div class="kp-wsf-field__input">';
             $html .= $this->render($field, $value);
@@ -222,9 +233,6 @@ class FieldTypes
         }
 
         $required = ! empty($field['required']) ? ' <span class="required">*</span>' : '';
-        $sublabel = !empty($field['sublabel'])
-        ? sprintf('<span class="kp-wsf-sublabel">%s</span>', esc_html($field['sublabel']))
-        : '';
 
         return sprintf(
             '<label for="%s">%s%s</label>%s',

@@ -43,6 +43,17 @@
             this.initRangeSliders();
             this.initGallery();
             this.initLinkSelector();
+            this.initMultiSelector();
+        },
+
+        /**
+         * Initialize Select2 functionality.
+         *
+         * @since 1.0.0
+         * @return {void}
+         */
+        initMultiSelector: function () {
+            $$("select[multiple='multiple']").select2();
         },
 
         // =====================================================================
