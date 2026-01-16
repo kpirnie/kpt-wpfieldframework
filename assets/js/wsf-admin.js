@@ -53,7 +53,7 @@
          * @return {void}
          */
         initMultiSelector: function () {
-            $$("select[multiple='multiple']").select2();
+            $("select[multiple='multiple']").select2();
         },
 
         // =====================================================================
