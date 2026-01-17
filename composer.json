@@ -3,11 +3,30 @@
     "description": "A PHP framework for creating WordPress Options Pages, Meta Boxes, and Gutenberg Blocks with repeatable field groups.",
     "type": "library",
     "license": "MIT",
+    "funding": [
+        {
+            "type": "paypal",
+            "url": "https://www.paypal.biz/kevinpirnie"
+        },
+        {
+            "type": "ko-fi",
+            "url": "https://ko-fi.com/kevinpirnie"
+        }
+    ],
     "authors": [
         {
             "name": "Kevin Pirnie",
             "email": "iam@kevinpirnie.com"
         }
+    ],
+    "homepage": "https://kevinpirnie.com/",
+    "keywords": [
+        "wordpress",
+        "meta-box",
+        "options-page",
+        "gutenberg",
+        "blocks",
+        "framework"
     ],
     "require": {
         "php": ">=8.2"
@@ -17,14 +36,6 @@
             "KP\\WPFieldFramework\\": "src/"
         }
     },
-    "keywords": [
-        "wordpress",
-        "meta-box",
-        "options-page",
-        "gutenberg",
-        "blocks",
-        "framework"
-    ],
     "scripts": {
         "cs-check": "phpcs src --standard=PSR12 --ignore=*.js,*.css -n",
         "cs-fix": "phpcbf src --standard=PSR12 --ignore=*.js,*.css -n"
