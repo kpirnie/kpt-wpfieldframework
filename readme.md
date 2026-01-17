@@ -1125,6 +1125,113 @@ $storage->clearCache('post_meta_'); // Clear by prefix
 $storage->setUseCache(false);
 ```
 
+## Export / Import Settings
+
+The framework includes built-in functionality to export and import settings, making it easy to backup configurations or migrate settings between environments.
+
+### Enabling Export/Import UI
+
+Add `show_export_import => true` to your options page configuration:
+```php
+$framework->addOptionsPage([
+    'page_title'         => 'My Plugin Settings',
+    'menu_title'         => 'My Plugin',
+    'menu_slug'          => 'my-plugin-settings',
+    'show_export_import' => true,  // Enables the Export/Import UI
+    'tabs'               => [
+        // All tabs will be included in export/import
+        'general'  => [
+            'title'    => 'General',
+            'sections' => [ /* ... */ ],
+        ],
+        'advanced' => [
+            'title'    => 'Advanced',
+            'sections' => [ /* ... */ ],
+        ],
+    ],
+]);
+```
+
+This adds an "Export / Import Settings" panel at the bottom of your options page that allows users to:
+
+- **Export**: Download all current settings (including defaults for unsaved fields) as a JSON file
+- **Import**: Upload a previously exported JSON file to restore settings
+
+### Programmatic Export/Import
+
+You can also export and import settings programmatically:
+```php
+use KP\WPFieldFramework\Framework;
+
+$framework = Framework::getInstance();
+$export_import = $framework->getExportImport();
+
+// Export specific option keys
+$json = $export_import->export(['my_plugin_settings']);
+
+// Export with defaults (includes default values for fields not yet saved)
+$options_page = $framework->getOptionsPageBySlug('my-plugin-settings');
+$json = $export_import->exportWithDefaults([$options_page]);
+
+// Validate import data before importing
+$validation = $export_import->validate($json);
+if ($validation['valid']) {
+    echo 'Options to import: ' . implode(', ', $validation['options']);
+    echo 'Exported from: ' . $validation['meta']['site_url'];
+    echo 'Export date: ' . $validation['meta']['exported'];
+}
+
+// Import settings (with optional whitelist)
+$allowed_options = ['my_plugin_settings'];
+$result = $export_import->import($json, $allowed_options);
+
+if ($result['success']) {
+    echo 'Imported: ' . implode(', ', $result['imported']);
+} else {
+    echo 'Errors: ' . implode(', ', $result['errors']);
+}
+
+// Import from uploaded file
+if (isset($_FILES['import_file'])) {
+    $result = $export_import->importFromFile(
+        $_FILES['import_file'],
+        ['my_plugin_settings']
+    );
+}
+
+// Trigger direct download
+$export_import->exportDownload(
+    ['my_plugin_settings'],
+    'my-plugin-backup.json'
+);
+```
+
+### Export File Format
+
+Exported JSON files include metadata and all settings:
+```json
+{
+    "version": "1.0.0",
+    "exported": "2025-01-17T12:00:00+00:00",
+    "site_url": "https://example.com",
+    "settings": {
+        "my_plugin_settings": {
+            "logo": 123,
+            "primary_color": "#0073aa",
+            "enable_feature": true,
+            "custom_css": ".my-class { color: red; }"
+        }
+    }
+}
+```
+
+### Security Considerations
+
+- Export/Import requires the `manage_options` capability
+- Imports are validated against registered option keys (whitelist)
+- All values pass through the framework's sanitization on import
+- AJAX endpoints are protected with nonce verification
+
 ## Advanced Usage
 
 ### Manual Initialization

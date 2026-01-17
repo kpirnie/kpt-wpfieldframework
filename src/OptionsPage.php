@@ -71,17 +71,18 @@ class OptionsPage
      * @var array
      */
     private array $defaults = array(
-        'page_title'  => 'Options',
-        'menu_title'  => 'Options',
-        'capability'  => 'manage_options',
-        'menu_slug'   => 'kp-wsf-options',
-        'parent_slug' => '',
-        'icon_url'    => 'dashicons-admin-generic',
-        'position'    => null,
-        'option_name' => '',
-        'option_key'  => '',
-        'tabs'        => array(),
-        'sections'    => array(),
+        'page_title'            => 'Options',
+        'menu_title'            => 'Options',
+        'capability'            => 'manage_options',
+        'menu_slug'             => 'kp-wsf-options',
+        'parent_slug'           => '',
+        'icon_url'              => 'dashicons-admin-generic',
+        'position'              => null,
+        'option_name'           => '',
+        'option_key'            => '',
+        'show_export_import'    => false,
+        'tabs'                  => array(),
+        'sections'              => array(),
     );
     /**
      * Constructor.
@@ -407,6 +408,7 @@ class OptionsPage
             }
 
             submit_button($this->config['save_button'] ?? __('Save Settings', 'kp-wsf'));
+            $this->renderExportImport();
             ?>
         </form>
         <?php
@@ -604,4 +606,78 @@ class OptionsPage
         unset($options[ $key ]);
         return $this->storage->updateOption($this->config['option_key'], $options);
     }
+
+    /**
+     * Render export/import section.
+     *
+     * @since  1.0.0
+     * @return void
+     */
+    private function renderExportImport(): void
+    {
+        if (empty($this->config['show_export_import'])) {
+            return;
+        }
+        ?>
+        <div class="kp-wsf-export-import">
+            <h2><?php esc_html_e('Export / Import Settings', 'kp-wsf'); ?></h2>
+            <p class="description"><?php esc_html_e('Export or import all settings for this options page, including all tabs.', 'kp-wsf'); ?></p>
+            
+            <div class="kp-wsf-export-import-columns">
+                <div class="kp-wsf-export-section">
+                    <h3><?php esc_html_e('Export', 'kp-wsf'); ?></h3>
+                    <p class="description"><?php esc_html_e('Download all current settings (including defaults) as a JSON file.', 'kp-wsf'); ?></p>
+                    <button type="button" class="button button-secondary kp-wsf-export-btn" data-menu-slug="<?php echo esc_attr($this->config['menu_slug']); ?>">
+                        <?php esc_html_e('Export All Settings', 'kp-wsf'); ?>
+                    </button>
+                </div>
+
+                <div class="kp-wsf-import-section">
+                    <h3><?php esc_html_e('Import', 'kp-wsf'); ?></h3>
+                    <p class="description"><?php esc_html_e('Upload a previously exported JSON file to restore all settings.', 'kp-wsf'); ?></p>
+                    <input type="file" class="kp-wsf-import-file" accept=".json" />
+                    <button type="button" class="button button-secondary kp-wsf-import-btn" data-menu-slug="<?php echo esc_attr($this->config['menu_slug']); ?>" disabled>
+                        <?php esc_html_e('Import All Settings', 'kp-wsf'); ?>
+                    </button>
+                    <p class="kp-wsf-import-status"></p>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Get all registered fields across all sections and tabs.
+     *
+     * @since  1.0.0
+     * @return array Array of all field configurations.
+     */
+    public function getAllFields(): array
+    {
+        $all_fields = [];
+        
+        foreach ($this->fields as $section_id => $section_fields) {
+            foreach ($section_fields as $field) {
+                // Skip layout-only fields.
+                $layout_types = ['heading', 'separator', 'html', 'message'];
+                if (!in_array($field['type'] ?? 'text', $layout_types, true)) {
+                    $all_fields[$field['id']] = $field;
+                }
+                
+                // Handle repeater sub-fields.
+                if (($field['type'] ?? '') === 'repeater' && !empty($field['fields'])) {
+                    // Store repeater field info for reference.
+                    $all_fields[$field['id']]['_is_repeater'] = true;
+                }
+                
+                // Handle group sub-fields.
+                if (($field['type'] ?? '') === 'group' && !empty($field['fields'])) {
+                    $all_fields[$field['id']]['_is_group'] = true;
+                }
+            }
+        }
+        
+        return $all_fields;
+    }
+
 }

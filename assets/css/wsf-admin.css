@@ -418,3 +418,52 @@
 .kp-wsf-conditional-data {
     display: none;
 }
+
+/* ==========================================================================
+   Export / Import
+   ========================================================================== */
+
+.kp-wsf-export-import {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #c3c4c7;
+}
+
+.kp-wsf-export-import > h2 {
+    margin-bottom: 10px;
+}
+
+.kp-wsf-export-import > p.description {
+    margin-bottom: 20px;
+}
+
+.kp-wsf-export-import-columns {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.kp-wsf-export-section,
+.kp-wsf-import-section {
+    flex: 1;
+    min-width: 280px;
+    padding: 15px;
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+}
+
+.kp-wsf-export-section h3,
+.kp-wsf-import-section h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.kp-wsf-import-file {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.kp-wsf-import-status {
+    margin-top: 10px;
+    font-style: italic;
+}

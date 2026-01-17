@@ -102,6 +102,20 @@ final class Framework
      */
     private bool $initialized = false;
     /**
+     * Export/Import handler instance.
+     *
+     * @since 1.0.0
+     * @var ExportImport|null
+     */
+    private ?ExportImport $export_import = null;
+    /**
+     * Map of menu slugs to options pages.
+     *
+     * @since 1.0.0
+     * @var array<string, OptionsPage>
+     */
+    private array $options_pages_by_slug = [];
+    /**
      * Private constructor to enforce singleton.
      *
      * @since 1.0.0
@@ -174,6 +188,7 @@ final class Framework
         // Initialize core components.
         $this->field_types = new FieldTypes();
         $this->storage = new Storage();
+        $this->export_import = new ExportImport($this->storage);
         $this->block_generator = new BlockGenerator($this->field_types);
         // Register WordPress hooks.
         $this->registerHooks();
@@ -210,6 +225,9 @@ final class Framework
         // Nav menu item custom fields.
         add_action('wp_nav_menu_item_custom_fields', array( $this, 'renderNavMenuFields' ), 10, 5);
         add_action('wp_update_nav_menu_item', array( $this, 'saveNavMenuFields' ), 10, 3);
+        // Handle export/import AJAX actions.
+        add_action('wp_ajax_kp_wsf_export_settings', array($this, 'ajaxExportSettings'));
+        add_action('wp_ajax_kp_wsf_import_settings', array($this, 'ajaxImportSettings'));
     }
 
     /**
@@ -307,6 +325,13 @@ final class Framework
                         'confirmDelete' => __('Are you sure you want to remove this item?', 'kp-wsf'),
                         'mediaTitle'    => __('Select or Upload', 'kp-wsf'),
                         'mediaButton'   => __('Use this file', 'kp-wsf'),
+                        'exporting'      => __('Exporting...', 'kp-wsf'),
+                        'importing'      => __('Importing...', 'kp-wsf'),
+                        'exportError'    => __('Export failed. Please try again.', 'kp-wsf'),
+                        'importError'    => __('Import failed. Please try again.', 'kp-wsf'),
+                        'confirmImport'  => __('This will overwrite your current settings. Continue?', 'kp-wsf'),
+                        'noFileSelected' => __('Please select a file.', 'kp-wsf'),
+                        'fileReadError'  => __('Failed to read file.', 'kp-wsf'),
                     ),
                 )
             );
@@ -342,6 +367,7 @@ final class Framework
     {
         $page = new OptionsPage($config, $this->field_types, $this->storage);
         $this->options_pages[ $page->getMenuSlug() ] = $page;
+        $this->options_pages_by_slug[$page->getMenuSlug()] = $page;
         return $page;
     }
 
@@ -603,4 +629,137 @@ final class Framework
     {
         return $this->initialized;
     }
+
+    /**
+     * Get the export/import handler.
+     *
+     * @since  1.0.0
+     * @return ExportImport The export/import instance.
+     */
+    public function getExportImport(): ExportImport
+    {
+        return $this->export_import;
+    }
+
+    /**
+     * Get all registered option keys.
+     *
+     * @since  1.0.0
+     * @return array Array of option keys.
+     */
+    public function getRegisteredOptionKeys(): array
+    {
+        $keys = [];
+        foreach ($this->options_pages as $page) {
+            $key = $page->getOptionKey();
+            if (!in_array($key, $keys, true)) {
+                $keys[] = $key;
+            }
+        }
+        return $keys;
+    }
+
+    /**
+     * Get options page by menu slug.
+     *
+     * @since  1.0.0
+     * @param  string $menu_slug The menu slug.
+     * @return OptionsPage|null  The options page or null.
+     */
+    public function getOptionsPageBySlug(string $menu_slug): ?OptionsPage
+    {
+        return $this->options_pages_by_slug[$menu_slug] ?? null;
+    }
+
+    /**
+     * AJAX handler for exporting settings.
+     *
+     * @since  1.0.0
+     * @return void
+     */
+    public function ajaxExportSettings(): void
+    {
+        check_ajax_referer('kp_wsf_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Permission denied.', 'kp-wsf')]);
+        }
+
+        $menu_slug = isset($_POST['menu_slug']) ? sanitize_key($_POST['menu_slug']) : '';
+        
+        if (!empty($menu_slug)) {
+            // Export specific options page with defaults.
+            $page = $this->getOptionsPageBySlug($menu_slug);
+            if ($page) {
+                $json = $this->export_import->exportWithDefaults([$page]);
+                $filename = sanitize_file_name($menu_slug) . '-settings-' . date('Y-m-d-His') . '.json';
+            } else {
+                wp_send_json_error(['message' => __('Options page not found.', 'kp-wsf')]);
+                return;
+            }
+        } else {
+            // Export all options pages with defaults.
+            $json = $this->export_import->exportWithDefaults(array_values($this->options_pages));
+            $filename = 'all-settings-' . date('Y-m-d-His') . '.json';
+        }
+
+        wp_send_json_success([
+            'json'     => $json,
+            'filename' => $filename,
+        ]);
+    }
+
+    /**
+     * AJAX handler for importing settings.
+     *
+     * @since  1.0.0
+     * @return void
+     */
+    public function ajaxImportSettings(): void
+    {
+        check_ajax_referer('kp_wsf_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Permission denied.', 'kp-wsf')]);
+        }
+
+        $json = isset($_POST['json']) ? wp_unslash($_POST['json']) : '';
+        $menu_slug = isset($_POST['menu_slug']) ? sanitize_key($_POST['menu_slug']) : '';
+
+        if (empty($json)) {
+            wp_send_json_error(['message' => __('No data provided.', 'kp-wsf')]);
+        }
+
+        // Determine allowed options.
+        if (!empty($menu_slug)) {
+            $page = $this->getOptionsPageBySlug($menu_slug);
+            if ($page) {
+                $allowed_options = [$page->getOptionKey()];
+            } else {
+                wp_send_json_error(['message' => __('Options page not found.', 'kp-wsf')]);
+                return;
+            }
+        } else {
+            $allowed_options = $this->getRegisteredOptionKeys();
+        }
+
+        $result = $this->export_import->import($json, $allowed_options);
+
+        if ($result['success']) {
+            wp_send_json_success([
+                'message'  => sprintf(
+                    __('Successfully imported %d setting group(s).', 'kp-wsf'),
+                    count($result['imported'])
+                ),
+                'imported' => $result['imported'],
+                'errors'   => $result['errors'],
+            ]);
+        } else {
+            wp_send_json_error([
+                'message' => __('Import failed.', 'kp-wsf'),
+                'errors'  => $result['errors'],
+            ]);
+        }
+    }
+
 }
