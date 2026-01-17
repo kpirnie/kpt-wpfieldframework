@@ -686,7 +686,7 @@ final class Framework
         }
 
         $menu_slug = isset($_POST['menu_slug']) ? sanitize_key($_POST['menu_slug']) : '';
-        
+
         if (!empty($menu_slug)) {
             // Export specific options page with defaults.
             $page = $this->getOptionsPageBySlug($menu_slug);
@@ -761,5 +761,4 @@ final class Framework
             ]);
         }
     }
-
 }

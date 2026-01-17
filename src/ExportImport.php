@@ -68,7 +68,7 @@ class ExportImport
             $option_key = $page->getOptionKey();
             $stored_values = $this->storage->getOption($option_key, []);
             $all_fields = $page->getAllFields();
-            
+
             // Merge stored values with defaults.
             $merged_values = [];
             foreach ($all_fields as $field) {

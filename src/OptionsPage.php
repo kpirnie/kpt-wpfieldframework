@@ -655,7 +655,7 @@ class OptionsPage
     public function getAllFields(): array
     {
         $all_fields = [];
-        
+
         foreach ($this->fields as $section_id => $section_fields) {
             foreach ($section_fields as $field) {
                 // Skip layout-only fields.
@@ -663,21 +663,20 @@ class OptionsPage
                 if (!in_array($field['type'] ?? 'text', $layout_types, true)) {
                     $all_fields[$field['id']] = $field;
                 }
-                
+
                 // Handle repeater sub-fields.
                 if (($field['type'] ?? '') === 'repeater' && !empty($field['fields'])) {
                     // Store repeater field info for reference.
                     $all_fields[$field['id']]['_is_repeater'] = true;
                 }
-                
+
                 // Handle group sub-fields.
                 if (($field['type'] ?? '') === 'group' && !empty($field['fields'])) {
                     $all_fields[$field['id']]['_is_group'] = true;
                 }
             }
         }
-        
+
         return $all_fields;
     }
-
 }
