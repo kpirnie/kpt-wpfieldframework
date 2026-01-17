@@ -73,6 +73,7 @@ class Sanitizer
             'user_select'               => $this->sanitizeUserSelect($value),
             'repeater'                  => $this->sanitizeRepeater($value, $field),
             'group'                     => $this->sanitizeGroup($value, $field),
+            'heading', 'separator', 'html', 'message' => null,
             default                     => $this->sanitizeText($value),
         };
     }

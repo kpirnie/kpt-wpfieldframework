@@ -178,11 +178,11 @@ class FieldTypes
     {
         $field = wp_parse_args($field, $this->field_defaults);
 
-        // Skip row wrapper for certain types.
+        /*// Skip row wrapper for certain types.
         $no_wrapper_types = array( 'hidden', 'heading', 'separator', 'html' );
         if (in_array($field['type'], $no_wrapper_types, true)) {
             return $this->render($field, $value);
-        }
+        }*/
 
         $html = '';
         if ($context === 'options') {
