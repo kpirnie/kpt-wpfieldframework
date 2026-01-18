@@ -307,7 +307,7 @@ final class Framework
         // Framework admin styles.
         $style_path = $this->assets_path . '/css/wsf-admin.css';
         if (file_exists($style_path)) {
-            wp_enqueue_style('kp-wsf-admin', $this->assets_url . '/css/wsf-admin.css', array(), self::VERSION);
+            wp_enqueue_style('kp-wsf-admin', $this->assets_url . '/css/wsf-admin.css', array(), time());
         }
 
         // Framework admin script.
