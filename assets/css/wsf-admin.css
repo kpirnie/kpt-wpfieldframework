@@ -467,3 +467,50 @@
     margin-top: 10px;
     font-style: italic;
 }
+/* ==========================================================================
+   Inline Fields (Repeaters & Groups)
+   ========================================================================== */
+
+/* Repeater row content as flex container */
+.kp-wsf-repeater__row-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Repeater fields default to full width */
+.kp-wsf-repeater__field {
+    flex: 0 0 100%;
+}
+
+/* Inline repeater fields share the row */
+.kp-wsf-repeater__field--inline {
+    flex: 1 1 0;
+    min-width: 150px;
+}
+
+/* Group fields container as flex */
+.kp-wsf-group-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Group fields default to full width */
+.kp-wsf-group-field {
+    flex: 0 0 100%;
+}
+
+/* Inline group fields share the row */
+.kp-wsf-group-field--inline {
+    flex: 1 1 0;
+    min-width: 150px;
+}
+
+/* Responsive - stack on small screens */
+@media screen and (max-width: 600px) {
+    .kp-wsf-repeater__field--inline,
+    .kp-wsf-group-field--inline {
+        flex: 0 0 100%;
+    }
+}

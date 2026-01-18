@@ -691,8 +691,8 @@ class FieldTypes
     {
         $value = is_array($value) ? $value : array();
         $is_inline = filter_var($field['inline'], FILTER_VALIDATE_BOOLEAN);
-        $inliner = ($is_inline) ? ' style="display: flex;gap: 20px;"' : '';
-        $html = '<fieldset class="kp-wsf-checkboxes"' . $inliner . '>';
+        $inliner = ($is_inline) ? ' inline-field' : '';
+        $html = '<fieldset class="kp-wsf-checkboxes' . $inliner . '">';
         foreach ($field['options'] as $opt_value => $opt_label) {
             $checked = in_array((string) $opt_value, array_map('strval', $value), true) ? ' checked="checked"' : '';
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
@@ -724,8 +724,8 @@ class FieldTypes
     private function renderRadio(array $field, mixed $value): string
     {
         $is_inline = filter_var($field['inline'], FILTER_VALIDATE_BOOLEAN);
-        $inliner = ($is_inline) ? ' style="display: flex;gap: 20px;"' : '';
-        $html = '<fieldset class="kp-wsf-radios"' . $inliner . '>';
+        $inliner = ($is_inline) ? ' inline-field"' : '';
+        $html = '<fieldset class="kp-wsf-radios' . $inliner . '">';
         foreach ($field['options'] as $opt_value => $opt_label) {
             $checked = checked($value, $opt_value, false);
             $opt_id = $field['id'] . '_' . sanitize_key($opt_value);
@@ -1189,8 +1189,9 @@ class FieldTypes
     {
         $value = is_array($value) ? $value : array();
         $sub_fields = $field['fields'] ?? array();
+
         $html = '<div class="kp-wsf-group">';
-        if (! empty($field['label'])) {
+        if (!empty($field['label'])) {
             $html .= sprintf('<h4 class="kp-wsf-group-title">%s</h4>', esc_html($field['label']));
         }
 
@@ -1199,8 +1200,29 @@ class FieldTypes
             // Prefix subfield IDs/names with group ID.
             $sub_field['id'] = $field['id'] . '_' . $sub_field['id'];
             $sub_field['name'] = $field['name'] . '[' . $sub_field['id'] . ']';
-            $sub_value = $value[ $sub_field['id'] ] ?? null;
-            $html .= $this->renderRow($sub_field, $sub_value, 'meta');
+            $sub_value = $value[$sub_field['id']] ?? null;
+
+            // Check for inline
+            $is_inline = !empty($sub_field['inline']) && filter_var($sub_field['inline'], FILTER_VALIDATE_BOOLEAN);
+            $inline_class = $is_inline ? ' kp-wsf-group-field--inline' : '';
+
+            $html .= '<div class="kp-wsf-group-field kp-wsf-group-field--' . esc_attr($sub_field['type'] ?? 'text') . $inline_class . '">';
+
+            if (!empty($sub_field['label'])) {
+                $required = !empty($sub_field['required']) ? ' <span class="required">*</span>' : '';
+                $html .= sprintf('<label for="%s">%s%s</label>', esc_attr($sub_field['id']), esc_html($sub_field['label']), $required);
+            }
+            if (!empty($sub_field['sublabel'])) {
+                $html .= sprintf('<span class="kp-wsf-sublabel">%s</span>', wp_kses_post($sub_field['sublabel']));
+            }
+
+            $html .= '<div class="kp-wsf-group-field__input">';
+            $html .= $this->render($sub_field, $sub_value);
+            if (!empty($sub_field['description'])) {
+                $html .= sprintf('<p class="description">%s</p>', wp_kses_post($sub_field['description']));
+            }
+            $html .= '</div>';
+            $html .= '</div>';
         }
 
         $html .= '</div>';
