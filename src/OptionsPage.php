@@ -284,21 +284,6 @@ class OptionsPage
      */
     private function registerField(string $section_id, array $field): void
     {
-        /*// Skip layout-only fields.
-        $layout_types = array( 'heading', 'separator', 'html', 'message' );
-        if (in_array($field['type'] ?? 'text', $layout_types, true)) {
-            add_settings_field(
-                $field['id'],
-                '',
-                function () use ($field) {
-
-                    echo $this->field_types->render($field, null);
-                },
-                $this->config['menu_slug'],
-                $section_id
-            );
-            return;
-        }*/
 
         $label = $field['label'] ?? '';
         if (! empty($field['sublabel'])) {

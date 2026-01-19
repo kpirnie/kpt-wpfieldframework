@@ -82,6 +82,7 @@ class FieldTypes
         // Complex.
         'repeater',
         'group',
+        'accordion',
     );
     /**
      * Default field configuration.
@@ -177,12 +178,6 @@ class FieldTypes
     public function renderRow(array $field, mixed $value = null, string $context = 'meta'): string
     {
         $field = wp_parse_args($field, $this->field_defaults);
-
-        /*// Skip row wrapper for certain types.
-        $no_wrapper_types = array( 'hidden', 'heading', 'separator', 'html' );
-        if (in_array($field['type'], $no_wrapper_types, true)) {
-            return $this->render($field, $value);
-        }*/
 
         $html = '';
         if ($context === 'options') {
@@ -1227,6 +1222,54 @@ class FieldTypes
 
         $html .= '</div>';
         $html .= '</div>';
+        return $html;
+    }
+
+    /**
+     * Render an accordion section.
+     *
+     * @since  1.0.0
+     * @param  array $field The field configuration.
+     * @param  mixed $value The current values (associative array).
+     * @return string       The field HTML.
+     */
+    private function renderAccordion(array $field, mixed $value): string
+    {
+        $value = is_array($value) ? $value : [];
+        $sub_fields = $field['fields'] ?? [];
+        $open = !empty($field['open']) ? ' kp-wsf-accordion--open' : '';
+
+        $html = '<div class="kp-wsf-accordion' . $open . '">';
+
+        // Header.
+        $html .= '<div class="kp-wsf-accordion__header">';
+        $html .= sprintf(
+            '<span class="kp-wsf-accordion__title">%s</span>',
+            esc_html($field['label'] ?? '')
+        );
+        if (!empty($field['sublabel'])) {
+            $html .= sprintf(
+                '<span class="kp-wsf-sublabel">%s</span>',
+                esc_html($field['sublabel'])
+            );
+        }
+        $html .= '<span class="kp-wsf-accordion__icon dashicons dashicons-arrow-down-alt2"></span>';
+        $html .= '</div>';
+
+        // Content.
+        $html .= '<div class="kp-wsf-accordion__content">';
+
+        foreach ($sub_fields as $sub_field) {
+            $sub_field['id'] = $field['id'] . '_' . $sub_field['id'];
+            $sub_field['name'] = $field['name'] . '[' . $sub_field['id'] . ']';
+
+            $sub_value = $value[$sub_field['id']] ?? null;
+            $html .= $this->renderRow($sub_field, $sub_value, 'meta');
+        }
+
+        $html .= '</div>';
+        $html .= '</div>';
+
         return $html;
     }
 }

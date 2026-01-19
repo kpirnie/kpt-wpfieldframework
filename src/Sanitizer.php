@@ -68,11 +68,12 @@ class Sanitizer
             'color'                     => $this->sanitizeColor($value),
             'image', 'file'             => $this->sanitizeAttachment($value),
             'gallery'                   => $this->sanitizeGallery($value),
-            'post_select', 'page_select' => $this->sanitizePostSelect($value),
+            'post_select', 'page_select'=> $this->sanitizePostSelect($value),
             'term_select'               => $this->sanitizeTermSelect($value),
             'user_select'               => $this->sanitizeUserSelect($value),
             'repeater'                  => $this->sanitizeRepeater($value, $field),
             'group'                     => $this->sanitizeGroup($value, $field),
+            'accordion'                 => $this->sanitizeGroup($value, $field),
             'heading', 'separator', 'html', 'message' => null,
             default                     => $this->sanitizeText($value),
         };

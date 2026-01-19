@@ -46,6 +46,7 @@
             this.initMultiSelector();
             this.initConditionals();
             this.initExportImport();
+            this.initAccordions();
         },
 
         /**
@@ -56,6 +57,19 @@
          */
         initMultiSelector: function () {
             $("select[multiple='multiple']").select2({ width: '75%', placeholder: "Select an option..." });
+        },
+
+        /**
+         * Initialize accordion functionality.
+         *
+         * @since 1.0.0
+         * @return {void}
+         */
+        initAccordions: function () {
+            $(document).on('click', '.kp-wsf-accordion__header', function (e) {
+                e.preventDefault();
+                $(this).closest('.kp-wsf-accordion').toggleClass('kp-wsf-accordion--open');
+            });
         },
 
         // =====================================================================

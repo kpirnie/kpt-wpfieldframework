@@ -490,7 +490,7 @@
 }
 
 /* Group fields container as flex */
-.kp-wsf-group-fields {
+.kp-wsf-group-fields, .inline-field {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
@@ -500,6 +500,7 @@
 .kp-wsf-group-field {
     flex: 0 0 100%;
 }
+.kp-wsf-group-field label:first-child {padding-bottom:20px !important;font-weight: 500;}
 
 /* Inline group fields share the row */
 .kp-wsf-group-field--inline {
@@ -513,4 +514,36 @@
     .kp-wsf-group-field--inline {
         flex: 0 0 100%;
     }
+}
+
+.kp-wsf-accordion {
+    border: 1px solid #c3c4c7;
+    margin-bottom: 15px;
+    background: #fff;
+}
+.kp-wsf-accordion__header {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f6f7f7;
+    cursor: pointer;
+    user-select: none;
+}
+.kp-wsf-accordion__title {
+    flex: 1;
+    font-weight: 600;
+}
+.kp-wsf-accordion__icon {
+    transition: transform 0.2s;
+}
+.kp-wsf-accordion--open .kp-wsf-accordion__icon {
+    transform: rotate(180deg);
+}
+.kp-wsf-accordion__content {
+    display: none;
+    padding: 15px;
+    border-top: 1px solid #c3c4c7;
+}
+.kp-wsf-accordion--open .kp-wsf-accordion__content {
+    display: block;
 }
