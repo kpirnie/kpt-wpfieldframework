@@ -248,7 +248,7 @@ class FieldTypes
             return '';
         }
 
-        return sprintf('<p class="description">%s</p>', wp_kses_post($field['description']));
+        return sprintf('<p class="description kp-wsf-description--%s">%s</p>', $field['type'], wp_kses_post($field['description']));
     }
 
     /**
@@ -1191,7 +1191,7 @@ class FieldTypes
         }
 
         if (!empty($field['description'])) {
-            $html .= sprintf('<p class="description">%s</p>', wp_kses_post($field['description']));
+            $html .= $this->renderDescription($field);
         }
 
         $html .= '<div class="kp-wsf-group-fields">';
@@ -1218,7 +1218,7 @@ class FieldTypes
             $html .= '<div class="kp-wsf-group-field__input">';
             $html .= $this->render($sub_field, $sub_value);
             if (!empty($sub_field['description'])) {
-                $html .= sprintf('<p class="description">%s</p>', wp_kses_post($sub_field['description']));
+                $html .= sprintf('<p class="kp-wsf-field-description">%s</p>', wp_kses_post($sub_field['description']));
             }
             $html .= '</div>';
             $html .= '</div>';
@@ -1262,6 +1262,10 @@ class FieldTypes
 
         // Content.
         $html .= '<div class="kp-wsf-accordion__content">';
+
+        if($field['description']){
+            $html .= $this->renderDescription($field);
+        }
 
         foreach ($sub_fields as $sub_field) {
             $sub_field['id'] = $field['id'] . '_' . $sub_field['id'];

@@ -389,7 +389,7 @@ class MetaBox
             }
             echo $this->field_types->render($field, $value);
             if (! empty($field['description'])) {
-                echo '<span class="description">' . esc_html($field['description']) . '</span>';
+                echo '<span class="description kp-wsf-meta-description--' . $field['type'] . '">' . esc_html($field['description']) . '</span>';
             }
             echo '</div>';
         }

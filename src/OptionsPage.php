@@ -450,6 +450,10 @@ class OptionsPage
             if ($section['title']) {
                 echo '<h2>' . esc_html($section['title']) . '</h2>';
             }
+            // Render section.
+            if ($section['description']) {
+                $this->renderSectionDescription($section);
+            }
 
             if ($section['callback']) {
                 call_user_func($section['callback'], $section);
@@ -475,7 +479,7 @@ class OptionsPage
     private function renderSectionDescription(array $section): void
     {
         if (! empty($section['description'])) {
-            printf('<p class="description">%s</p>', wp_kses_post($section['description']));
+            printf('<p class="description kp-wsf-description--section">%s</p>', wp_kses_post($section['description']));
         }
     }
 
@@ -505,8 +509,8 @@ class OptionsPage
         echo $this->field_types->render($field, $value);
 
         // Render description if present.
-        if (! empty($field['description'])) {
-            printf('<p class="description">%s</p>', wp_kses_post($field['description']));
+        if (! empty($field['description']) && ! in_array($field['type'], ['group', 'accordion', 'repeater'])) {
+            printf('<p class="description kp-wsf-field-description--%s">%s</p>', $field['type'], wp_kses_post($field['description']));
         }
     }
 

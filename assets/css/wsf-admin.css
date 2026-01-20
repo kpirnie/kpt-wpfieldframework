@@ -547,3 +547,6 @@
 .kp-wsf-accordion--open .kp-wsf-accordion__content {
     display: block;
 }
+.kp-wsf-description--accordion, .kp-wsf-description--group, .kp-wsf-description--repeater {
+    padding-bottom:20px !important;
+}
