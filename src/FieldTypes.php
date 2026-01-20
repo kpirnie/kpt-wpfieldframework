@@ -1263,7 +1263,7 @@ class FieldTypes
         // Content.
         $html .= '<div class="kp-wsf-accordion__content">';
 
-        if($field['description']){
+        if ($field['description']) {
             $html .= $this->renderDescription($field);
         }
 
