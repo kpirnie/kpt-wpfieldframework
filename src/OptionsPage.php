@@ -451,7 +451,7 @@ class OptionsPage
                 echo '<h2>' . esc_html($section['title']) . '</h2>';
             }
             // Render section.
-            if ($section['description']) {
+            if (!empty($section['description'])) {
                 $this->renderSectionDescription($section);
             }
 
@@ -517,6 +517,9 @@ class OptionsPage
     /**
      * Sanitize all options on save.
      *
+     * Merges incoming values with existing stored values to preserve
+     * data from tabs that weren't submitted (tabbed interface support).
+     *
      * @since  1.0.0
      * @param  mixed $input The input values to sanitize.
      * @return array        The sanitized values.
@@ -527,9 +530,8 @@ class OptionsPage
             return array();
         }
 
-        $sanitized = array();
         $sanitizer = new Sanitizer();
-        // Get all registered fields.
+
         $all_fields = array();
         foreach ($this->fields as $section_fields) {
             foreach ($section_fields as $field) {
@@ -537,14 +539,54 @@ class OptionsPage
             }
         }
 
-        // Sanitize each field value.
+        $current_tab_fields = array();
+
+        if (!empty($this->config['tabs'])) {
+            $existing = $this->storage->getOption($this->config['option_key'], array());
+            $sanitized = is_array($existing) ? $existing : array();
+
+            $current_tab = '';
+            if (isset($_POST['_wp_http_referer'])) {
+                $referer = wp_unslash($_POST['_wp_http_referer']);
+                $query_string = wp_parse_url($referer, PHP_URL_QUERY);
+                if ($query_string) {
+                    parse_str($query_string, $query_vars);
+                    $current_tab = $query_vars['tab'] ?? '';
+                }
+            }
+            if (empty($current_tab)) {
+                $current_tab = array_key_first($this->config['tabs']);
+            }
+
+            foreach ($this->sections as $section_id => $section) {
+                if (($section['tab'] ?? '') === $current_tab) {
+                    if (isset($this->fields[$section_id])) {
+                        foreach ($this->fields[$section_id] as $field) {
+                            $current_tab_fields[$field['id']] = true;
+                        }
+                    }
+                }
+            }
+        } else {
+            $sanitized = array();
+        }
+
         foreach ($input as $key => $value) {
-            if (isset($all_fields[ $key ])) {
-                $field = $all_fields[ $key ];
-                $sanitized[ $key ] = $sanitizer->sanitize($value, $field);
+            if (isset($all_fields[$key])) {
+                $sanitized[$key] = $sanitizer->sanitize($value, $all_fields[$key]);
             } else {
-                // Unknown field, apply basic sanitization.
-                $sanitized[ $key ] = $sanitizer->sanitizeUnknown($value);
+                $sanitized[$key] = $sanitizer->sanitizeUnknown($value);
+            }
+        }
+
+        $fields_to_check = !empty($current_tab_fields) ? $current_tab_fields : $all_fields;
+        foreach ($fields_to_check as $field_id => $field_data) {
+            $field = $all_fields[$field_id] ?? null;
+            if ($field) {
+                $type = $field['type'] ?? 'text';
+                if (in_array($type, ['checkbox', 'switch'], true) && !isset($input[$field_id])) {
+                    $sanitized[$field_id] = false;
+                }
             }
         }
 

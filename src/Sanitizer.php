@@ -72,8 +72,7 @@ class Sanitizer
             'term_select'               => $this->sanitizeTermSelect($value),
             'user_select'               => $this->sanitizeUserSelect($value),
             'repeater'                  => $this->sanitizeRepeater($value, $field),
-            'group'                     => $this->sanitizeGroup($value, $field),
-            'accordion'                 => $this->sanitizeGroup($value, $field),
+            'group', 'accordion'        => $this->sanitizeGroup($value, $field),
             'heading', 'separator', 'html', 'message' => null,
             default                     => $this->sanitizeText($value),
         };
@@ -673,11 +672,20 @@ class Sanitizer
         }
 
         $sub_fields = $field['fields'] ?? array();
+        $group_id = $field['id'] ?? '';
         $sanitized = array();
+
         foreach ($sub_fields as $sub_field) {
             $sub_field_id = $sub_field['id'];
-            if (isset($value[ $sub_field_id ])) {
-                $sanitized[ $sub_field_id ] = $this->sanitize($value[ $sub_field_id ], $sub_field);
+
+            // Check for prefixed key (how it comes from the form)
+            $prefixed_id = $group_id . '_' . $sub_field_id;
+
+            if (isset($value[$prefixed_id])) {
+                $sanitized[$prefixed_id] = $this->sanitize($value[$prefixed_id], $sub_field);
+            } elseif (isset($value[$sub_field_id])) {
+                // Fallback to non-prefixed key
+                $sanitized[$sub_field_id] = $this->sanitize($value[$sub_field_id], $sub_field);
             }
         }
 

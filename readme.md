@@ -20,10 +20,10 @@ composer require kevinpirnie/kpt-wpfieldframework
 ```php
 <?php
 // In your main plugin file.
-use KP\WPStarterFramework\Loader;
+use KP\WPFieldFramework\Loader;
 
 // Bootstrap the framework.
-$framework = Loader::bootstrapPlugin(__FILE__);
+$framework = Loader::init();
 
 // Create an options page.
 $framework->addOptionsPage([
@@ -77,10 +77,10 @@ $framework->addMetaBox([
 ```php
 <?php
 // In your theme's functions.php.
-use KP\WPStarterFramework\Loader;
+use KP\WPFieldFramework\Loader;
 
 add_action('after_setup_theme', function() {
-    $framework = Loader::bootstrapTheme();
+    $framework = Loader::init();
 
     // Add your options pages and meta boxes here.
 });
@@ -111,6 +111,8 @@ $framework->addOptionsPage([
 ```
 
 ### Tabbed Options Page
+
+Tabbed options pages allow you to organize settings into multiple tabs. Each tab's settings are preserved when saving - only the current tab's fields are updated while other tabs' data remains intact.
 
 ```php
 $framework->addOptionsPage([
@@ -170,7 +172,7 @@ $framework->addOptionsPage([
 ### Retrieving Options
 
 ```php
-use KP\WPStarterFramework\Framework;
+use KP\WPFieldFramework\Framework;
 
 // Get all options.
 $options = get_option('theme_options');
@@ -672,6 +674,13 @@ $photo  = $attributes['photo'] ?? 0;
     'default' => 100,
 ]
 
+// Link selector
+[
+    'id'    => 'cta_link',
+    'type'  => 'link',
+    'label' => 'Call to Action Link',
+]
+
 // Post select
 [
     'id'             => 'related_post',
@@ -869,6 +878,111 @@ At least one condition must be true for the field to be visible.
 ]
 ```
 
+### Conditionals on Groups and Accordions
+
+Groups and accordions fully support conditional logic. You can show/hide entire groups or accordions based on other field values.
+
+```php
+[
+    'id'      => 'enable_social',
+    'type'    => 'switch',
+    'label'   => 'Enable Social Links',
+    'default' => false,
+],
+[
+    'id'          => 'social_links',
+    'type'        => 'group',
+    'label'       => 'Social Links',
+    'conditional' => [
+        'field'     => 'enable_social',
+        'value'     => true,
+        'condition' => '==',
+    ],
+    'fields' => [
+        [
+            'id'    => 'facebook',
+            'type'  => 'url',
+            'label' => 'Facebook URL',
+        ],
+        [
+            'id'    => 'twitter',
+            'type'  => 'url',
+            'label' => 'Twitter URL',
+        ],
+    ],
+]
+```
+
+### Nested Conditionals (Inside Accordions/Groups)
+
+When using conditionals on fields inside an accordion or group, the field IDs are automatically prefixed with the parent's ID. **You must use the prefixed field ID when referencing sibling fields within the same parent.**
+
+For example, if you have an accordion with ID `my_accordion` containing a switch with ID `enable_option`, the actual field ID becomes `my_accordion_enable_option`. Any conditional referencing this field must use the full prefixed ID:
+
+```php
+[
+    'id'    => 'my_settings',
+    'type'  => 'accordion',
+    'label' => 'My Settings',
+    'fields' => [
+        [
+            'id'      => 'show_advanced',
+            'type'    => 'switch',
+            'label'   => 'Show Advanced Options',
+            'default' => false,
+        ],
+        [
+            'id'          => 'advanced_settings',
+            'type'        => 'group',
+            'label'       => 'Advanced Settings',
+            // Reference the FULL prefixed ID of the sibling field
+            'conditional' => [
+                'field'     => 'my_settings_show_advanced',
+                'value'     => true,
+                'condition' => '==',
+            ],
+            'fields' => [
+                [
+                    'id'    => 'option_a',
+                    'type'  => 'text',
+                    'label' => 'Option A',
+                ],
+                [
+                    'id'    => 'option_b',
+                    'type'  => 'text',
+                    'label' => 'Option B',
+                ],
+            ],
+        ],
+    ],
+]
+```
+
+**Important:** When a conditional references a field *outside* the accordion/group (at the root level), use the original field ID without any prefix:
+
+```php
+[
+    'id'      => 'master_toggle',
+    'type'    => 'switch',
+    'label'   => 'Enable All Features',
+    'default' => false,
+],
+[
+    'id'    => 'feature_settings',
+    'type'  => 'accordion',
+    'label' => 'Feature Settings',
+    // References root-level field - no prefix needed
+    'conditional' => [
+        'field'     => 'master_toggle',
+        'value'     => true,
+        'condition' => '==',
+    ],
+    'fields' => [
+        // ...
+    ],
+]
+```
+
 ## Repeater Fields
 
 ### Basic Repeater
@@ -949,7 +1063,7 @@ At least one condition must be true for the field to be visible.
 ### Retrieving Repeater Data
 
 ```php
-use KP\WPStarterFramework\Repeater;
+use KP\WPFieldFramework\Repeater;
 
 // Get repeater data.
 $team_members = get_post_meta($post_id, 'team_members', true);
@@ -1009,15 +1123,75 @@ $count = Repeater::getRowCount($team_members);
 ]
 ```
 
+### Inline Group Fields
+
+Use the `inline` option to display fields side-by-side within a group:
+
+```php
+[
+    'id'     => 'dimensions',
+    'type'   => 'group',
+    'label'  => 'Dimensions',
+    'fields' => [
+        [
+            'id'     => 'width',
+            'type'   => 'number',
+            'label'  => 'Width',
+            'inline' => true,
+        ],
+        [
+            'id'     => 'height',
+            'type'   => 'number',
+            'label'  => 'Height',
+            'inline' => true,
+        ],
+        [
+            'id'     => 'depth',
+            'type'   => 'number',
+            'label'  => 'Depth',
+            'inline' => true,
+        ],
+    ],
+]
+```
+
 ### Retrieving Group Data
 
 ```php
 $address = get_post_meta($post_id, 'address', true);
 
-$street = $address['street'] ?? '';
-$city   = $address['city'] ?? '';
-$state  = $address['state'] ?? '';
-$zip    = $address['zip'] ?? '';
+$street = $address['address_street'] ?? '';
+$city   = $address['address_city'] ?? '';
+$state  = $address['address_state'] ?? '';
+$zip    = $address['address_zip'] ?? '';
+```
+
+**Note:** Group sub-field values are stored with the group ID as a prefix (e.g., `address_street` for a field with ID `street` inside a group with ID `address`).
+
+## Accordion Fields
+
+Accordions provide a collapsible container for organizing related fields:
+
+```php
+[
+    'id'          => 'advanced_settings',
+    'type'        => 'accordion',
+    'label'       => 'Advanced Settings',
+    'description' => 'Click to expand advanced options.',
+    'open'        => false, // Start collapsed
+    'fields'      => [
+        [
+            'id'    => 'cache_duration',
+            'type'  => 'number',
+            'label' => 'Cache Duration (seconds)',
+        ],
+        [
+            'id'    => 'debug_mode',
+            'type'  => 'switch',
+            'label' => 'Debug Mode',
+        ],
+    ],
+]
 ```
 
 ## Field Configuration Options
@@ -1037,6 +1211,7 @@ All fields support these common options:
 | `disabled` | bool | Whether field is disabled |
 | `readonly` | bool | Whether field is read-only |
 | `class` | string | Additional CSS class(es) |
+| `inline` | bool | Display field inline (for groups/repeaters) |
 | `attributes` | array | Additional HTML attributes |
 | `sanitize` | callable | Custom sanitization callback |
 | `validate` | callable | Custom validation callback |
@@ -1077,7 +1252,7 @@ All fields support these common options:
 The Storage class provides a unified interface for all WordPress data storage:
 
 ```php
-use KP\WPStarterFramework\Framework;
+use KP\WPFieldFramework\Framework;
 
 $storage = Framework::getInstance()->getStorage();
 
@@ -1132,6 +1307,7 @@ The framework includes built-in functionality to export and import settings, mak
 ### Enabling Export/Import UI
 
 Add `show_export_import => true` to your options page configuration:
+
 ```php
 $framework->addOptionsPage([
     'page_title'         => 'My Plugin Settings',
@@ -1160,6 +1336,7 @@ This adds an "Export / Import Settings" panel at the bottom of your options page
 ### Programmatic Export/Import
 
 You can also export and import settings programmatically:
+
 ```php
 use KP\WPFieldFramework\Framework;
 
@@ -1209,6 +1386,7 @@ $export_import->exportDownload(
 ### Export File Format
 
 Exported JSON files include metadata and all settings:
+
 ```json
 {
     "version": "1.0.0",
@@ -1237,7 +1415,7 @@ Exported JSON files include metadata and all settings:
 ### Manual Initialization
 
 ```php
-use KP\WPStarterFramework\Framework;
+use KP\WPFieldFramework\Framework;
 
 $framework = Framework::getInstance();
 
@@ -1249,28 +1427,15 @@ $framework->init(
 
 ### Requirements Check
 
-```php
-use KP\WPStarterFramework\Loader;
-
-$requirements = Loader::checkRequirements('6.8', '8.2');
-
-if (!$requirements['valid']) {
-    Loader::displayRequirementErrors($requirements['errors']);
-    return;
-}
-
-$framework = Loader::bootstrap();
-```
+The framework automatically checks requirements when using `Loader::init()`. If requirements are not met, an admin notice is displayed.
 
 ### Without Composer Autoloader
 
 ```php
-// Manually include and register the autoloader.
-require_once 'path/to/kp-wp-starter-framework/src/Loader.php';
+// Manually include and initialize.
+require_once 'path/to/kpt-wpfieldframework/src/Loader.php';
 
-KP\WPStarterFramework\Loader::register();
-
-$framework = KP\WPStarterFramework\Loader::bootstrap();
+$framework = KP\WPFieldFramework\Loader::init();
 ```
 
 ## JavaScript Events
@@ -1307,6 +1472,7 @@ KpWsfAdmin.initRangeSliders();
 KpWsfAdmin.initRepeaterSortable();
 KpWsfAdmin.initGallerySortable();
 KpWsfAdmin.initConditionals();
+KpWsfAdmin.initAccordions();
 
 // Add repeater row programmatically.
 KpWsfAdmin.repeaterAddRow($('.kp-wsf-repeater'));
@@ -1340,4 +1506,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 If you encounter any issues or have questions, please [open an issue](https://github.com/kpirnie/kpt-wpfieldframework/issues) on GitHub.
-```

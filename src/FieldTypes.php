@@ -1185,7 +1185,11 @@ class FieldTypes
         $value = is_array($value) ? $value : array();
         $sub_fields = $field['fields'] ?? array();
 
-        $html = '<div class="kp-wsf-group">';
+        // Add conditional support.
+        $conditional_attrs = $this->buildConditionalAttributes($field);
+        $conditional_class = !empty($field['conditional']) ? ' kp-wsf-conditional-field' : '';
+
+        $html = '<div class="kp-wsf-group' . $conditional_class . '"' . $conditional_attrs . '>';
         if (!empty($field['label'])) {
             $html .= sprintf('<h4 class="kp-wsf-group-title">%s</h4>', esc_html($field['label']));
         }
@@ -1243,7 +1247,11 @@ class FieldTypes
         $sub_fields = $field['fields'] ?? [];
         $open = !empty($field['open']) ? ' kp-wsf-accordion--open' : '';
 
-        $html = '<div class="kp-wsf-accordion' . $open . '">';
+        // Add conditional support.
+        $conditional_attrs = $this->buildConditionalAttributes($field);
+        $conditional_class = !empty($field['conditional']) ? ' kp-wsf-conditional-field' : '';
+
+        $html = '<div class="kp-wsf-accordion' . $open . $conditional_class . '"' . $conditional_attrs . '>';
 
         // Header.
         $html .= '<div class="kp-wsf-accordion__header">';
