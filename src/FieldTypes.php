@@ -1190,6 +1190,10 @@ class FieldTypes
             $html .= sprintf('<h4 class="kp-wsf-group-title">%s</h4>', esc_html($field['label']));
         }
 
+        if (!empty($field['description'])) {
+            $html .= sprintf('<p class="description">%s</p>', wp_kses_post($field['description']));
+        }
+
         $html .= '<div class="kp-wsf-group-fields">';
         foreach ($sub_fields as $sub_field) {
             // Prefix subfield IDs/names with group ID.

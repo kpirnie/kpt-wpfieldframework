@@ -368,6 +368,15 @@ class OptionsPage
             printf('<a href="%s" class="nav-tab%s">%s</a>', esc_url(add_query_arg('tab', $tab_id)), esc_attr($active), esc_html($tab['title'] ?? $tab_id));
         }
         echo '</nav>';
+
+        // Render tab description if present.
+        if (!empty($tabs[$current_tab]['description'])) {
+            printf(
+                '<p class="kp-wsf-tab-description">%s</p>',
+                wp_kses_post($tabs[$current_tab]['description'])
+            );
+        }
+
         // Render form with only current tab's sections.
         $this->renderForm($current_tab);
     }

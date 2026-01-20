@@ -76,8 +76,15 @@ class Repeater
         // Build HTML.
         $html = sprintf('<div class="kp-wsf-repeater" data-min-rows="%d" data-max-rows="%d" data-field-id="%s">', $min_rows, $max_rows, esc_attr($field['id']));
         // Repeater header.
-        if (! empty($field['label'])) {
-            $html .= sprintf('<div class="kp-wsf-repeater__header"><h4>%s</h4></div>', esc_html($field['label']));
+        if (!empty($field['label']) || !empty($field['description'])) {
+            $html .= '<div class="kp-wsf-repeater__header">';
+            if (!empty($field['label'])) {
+                $html .= sprintf('<h4>%s</h4>', esc_html($field['label']));
+            }
+            if (!empty($field['description'])) {
+                $html .= sprintf('<p class="description">%s</p>', wp_kses_post($field['description']));
+            }
+            $html .= '</div>';
         }
 
         // Rows container.
