@@ -550,3 +550,7 @@
 .kp-wsf-description--accordion, .kp-wsf-description--group, .kp-wsf-description--repeater {
     padding-bottom:20px !important;
 }
+.regular-text,
+.wp-core-ui select{
+    width:100% !important;
+}

@@ -649,6 +649,7 @@ class FieldTypes
         $field['name'] = $field['name'] . '[]';
         $field['attributes']['multiple'] = 'multiple';
         $field['attributes']['size'] = $field['size'] ?? 5;
+        $field['attributes']['style'] = 'width:100% !important;';
         $html = sprintf('<select%s>', $this->buildAttributes($field));
         foreach ($field['options'] as $opt_value => $opt_label) {
             $selected = in_array($opt_value, $value, true) ? ' selected="selected"' : '';

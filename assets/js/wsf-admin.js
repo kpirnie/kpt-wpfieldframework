@@ -56,7 +56,7 @@
          * @return {void}
          */
         initMultiSelector: function () {
-            $("select[multiple='multiple']").select2({ width: '75%', placeholder: "Select an option..." });
+            $("select[multiple='multiple']").select2({ width: '100%', placeholder: "Select an option..." });
         },
 
         /**
