@@ -19,10 +19,10 @@ declare(strict_types=1);
 namespace KP\WPFieldFramework;
 
 // We don't want to allow direct access to this
-defined( 'ABSPATH' ) || die( 'No direct script access allowed' );
+defined('ABSPATH') || die('No direct script access allowed');
 
 // make sure the class is not already defined
-if ( ! class_exists( '\KP\WPFieldFramework\Repeater' ) ) {
+if (! class_exists('\KP\WPFieldFramework\Repeater')) {
 
     /**
      * Class Repeater
