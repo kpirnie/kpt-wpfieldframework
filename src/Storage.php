@@ -94,9 +94,10 @@ if (! class_exists('\KP\WPFieldFramework\Storage')) {
          * @param  bool   $autoload Whether to autoload the option.
          * @return bool             True on success, false on failure.
          */
-        public function updateOption(string $option, mixed $value, bool $autoload = true): bool
+        public function updateOption(string $option, mixed $value, ?bool $autoload = null): bool
         {
             $result = update_option($option, $value, $autoload);
+
             // Update cache.
             if ($this->use_cache) {
                 $this->cache[ 'option_' . $option ] = $value;

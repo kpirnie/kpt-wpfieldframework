@@ -85,7 +85,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
             'option_name'           => '',
             'option_key'            => '',
             'show_export_import'    => false,
-            'autoload'              => false,
+            'autoload'              => null,
             'tabs'                  => array(),
             'sections'              => array(),
         );
@@ -249,7 +249,9 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
          */
         public function registerSettings(): void
         {
-            // Register the main option.
+            // Determine autoload value: true = 'on', false = 'off', null = 'auto'
+            $autoload = $this->config['autoload'];
+
             register_setting(
                 $this->config['menu_slug'],
                 $this->config['option_key'],
@@ -257,8 +259,28 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                     'type'              => 'array',
                     'sanitize_callback' => array( $this, 'sanitizeOptions' ),
                     'default'           => array(),
+                    'show_in_rest'      => false,
                 )
             );
+
+            // Handle autoload separately if specified
+            if ($autoload !== null) {
+                add_filter(
+                    "pre_update_option_{$this->config['option_key']}",
+                    function ($value, $old_value) use ($autoload) {
+                        global $wpdb;
+                        $wpdb->query($wpdb->prepare(
+                            "UPDATE {$wpdb->options} SET autoload = %s WHERE option_name = %s",
+                            $autoload ? 'on' : 'off',
+                            $this->config['option_key']
+                        ));
+                        return $value;
+                    },
+                    10,
+                    2
+                );
+            }
+
             // Register sections.
             foreach ($this->sections as $section_id => $section) {
                 add_settings_section(
