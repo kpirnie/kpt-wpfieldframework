@@ -1187,10 +1187,9 @@ if (! class_exists('\KP\WPFieldFramework\FieldTypes')) {
          */
         private function renderGroup(array $field, mixed $value): string
         {
-            $value = is_array($value) ? $value : array();
-            $sub_fields = $field['fields'] ?? array();
+            $value = is_array($value) ? $value : [];
+            $sub_fields = $field['fields'] ?? [];
 
-            // Add conditional support.
             $conditional_attrs = $this->buildConditionalAttributes($field);
             $conditional_class = !empty($field['conditional']) ? ' kp-wsf-conditional-field' : '';
 
@@ -1205,12 +1204,10 @@ if (! class_exists('\KP\WPFieldFramework\FieldTypes')) {
 
             $html .= '<div class="kp-wsf-group-fields">';
             foreach ($sub_fields as $sub_field) {
-                // Prefix subfield IDs/names with group ID.
-                $sub_field['id'] = $field['id'] . '_' . $sub_field['id'];
-                $sub_field['name'] = $field['name'] . '[' . $sub_field['id'] . ']';
-                $sub_value = $value[$sub_field['id']] ?? null;
+                $sub_field_id = $sub_field['id'];
+                $sub_field['name'] = $field['name'] . '[' . $sub_field_id . ']';
+                $sub_value = $value[$sub_field_id] ?? null;
 
-                // Check for inline
                 $is_inline = !empty($sub_field['inline']) && filter_var($sub_field['inline'], FILTER_VALIDATE_BOOLEAN);
                 $inline_class = $is_inline ? ' kp-wsf-group-field--inline' : '';
 
@@ -1252,39 +1249,29 @@ if (! class_exists('\KP\WPFieldFramework\FieldTypes')) {
             $sub_fields = $field['fields'] ?? [];
             $open = !empty($field['open']) ? ' kp-wsf-accordion--open' : '';
 
-            // Add conditional support.
             $conditional_attrs = $this->buildConditionalAttributes($field);
             $conditional_class = !empty($field['conditional']) ? ' kp-wsf-conditional-field' : '';
 
             $html = '<div class="kp-wsf-accordion' . $open . $conditional_class . '"' . $conditional_attrs . '>';
 
-            // Header.
             $html .= '<div class="kp-wsf-accordion__header">';
-            $html .= sprintf(
-                '<span class="kp-wsf-accordion__title">%s</span>',
-                esc_html($field['label'] ?? '')
-            );
+            $html .= sprintf('<span class="kp-wsf-accordion__title">%s</span>', esc_html($field['label'] ?? ''));
             if (!empty($field['sublabel'])) {
-                $html .= sprintf(
-                    '<span class="kp-wsf-sublabel">%s</span>',
-                    esc_html($field['sublabel'])
-                );
+                $html .= sprintf('<span class="kp-wsf-sublabel">%s</span>', esc_html($field['sublabel']));
             }
             $html .= '<span class="kp-wsf-accordion__icon dashicons dashicons-arrow-down-alt2"></span>';
             $html .= '</div>';
 
-            // Content.
             $html .= '<div class="kp-wsf-accordion__content">';
 
-            if ($field['description']) {
+            if (!empty($field['description'])) {
                 $html .= $this->renderDescription($field);
             }
 
             foreach ($sub_fields as $sub_field) {
-                $sub_field['id'] = $field['id'] . '_' . $sub_field['id'];
-                $sub_field['name'] = $field['name'] . '[' . $sub_field['id'] . ']';
-
-                $sub_value = $value[$sub_field['id']] ?? null;
+                $sub_field_id = $sub_field['id'];
+                $sub_field['name'] = $field['name'] . '[' . $sub_field_id . ']';
+                $sub_value = $value[$sub_field_id] ?? null;
                 $html .= $this->renderRow($sub_field, $sub_value, 'meta');
             }
 

@@ -77,8 +77,10 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
             $collapsed = $field['collapsed'] ?? false;
             $sortable = $field['sortable'] ?? true;
             $row_label = $field['row_label'] ?? __('Row', 'kp-wsf');
+
             // Build HTML.
             $html = sprintf('<div class="kp-wsf-repeater" data-min-rows="%d" data-max-rows="%d" data-field-id="%s">', $min_rows, $max_rows, esc_attr($field['id']));
+
             // Repeater header.
             if (!empty($field['label']) || !empty($field['description'])) {
                 $html .= '<div class="kp-wsf-repeater__header">';
@@ -93,6 +95,7 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
 
             // Rows container.
             $html .= '<div class="kp-wsf-repeater__rows">';
+
             // Render existing rows.
             if (! empty($value)) {
                 foreach ($value as $row_index => $row_data) {
@@ -118,6 +121,7 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
                 </div>',
                 esc_html($button_label)
             );
+
             // Row template for JavaScript cloning.
             $html .= '<script type="text/html" class="kp-wsf-repeater__template">';
             $html .= $this->renderRow($field, $sub_fields, '{{INDEX}}', array(), $collapsed, $sortable, $row_label, true);
@@ -147,8 +151,10 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
             $collapsed_class = $collapsed && ! $is_template ? ' kp-wsf-repeater__row--collapsed' : '';
             $template_class = $is_template ? ' kp-wsf-repeater__row--template' : '';
             $html = sprintf('<div class="kp-wsf-repeater__row%s%s" data-row-index="%s">', $collapsed_class, $template_class, esc_attr((string) $row_index));
+
             // Row header with controls.
             $html .= '<div class="kp-wsf-repeater__row-header">';
+
             // Drag handle for sorting.
             if ($sortable) {
                 $html .= '<span class="kp-wsf-repeater__drag dashicons dashicons-menu" title="' . esc_attr__('Drag to reorder', 'kp-wsf') . '"></span>';
@@ -157,8 +163,10 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
             // Row label/title.
             $display_index = is_numeric($row_index) ? (int) $row_index + 1 : $row_index;
             $html .= sprintf('<span class="kp-wsf-repeater__row-title">%s <span class="kp-wsf-repeater__row-number">%s</span></span>', esc_html($row_label), esc_html((string) $display_index));
+
             // Row controls.
             $html .= '<div class="kp-wsf-repeater__row-controls">';
+
             // Toggle button for collapse.
             if ($collapsed || true) {
                 // Always show toggle.
@@ -172,6 +180,7 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
             $html .= '<span class="dashicons dashicons-trash"></span>';
             $html .= '</button>';
             $html .= '</div>';
+
             // End controls.
             $html .= '</div>';
             // End header.
@@ -181,9 +190,11 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
             foreach ($sub_fields as $sub_field) {
                 // Build unique field ID and name for this row.
                 $sub_field_id = $field['id'] . '_' . $row_index . '_' . $sub_field['id'];
-                $sub_field_name = sprintf('%s[%s][%s]', $field['name'] ?? $field['id'], $row_index, $sub_field['id']);
+                $sub_field_name = $field['name'] . '[' . $row_index . '][' . $sub_field['id'] . ']';
+
                 // Get value for this sub-field.
                 $sub_value = $row_data[ $sub_field['id'] ] ?? ( $sub_field['default'] ?? null );
+
                 // Clone sub-field config with updated ID and name.
                 $sub_field_config = array_merge(
                     $sub_field,
@@ -192,11 +203,13 @@ if (! class_exists('\KP\WPFieldFramework\Repeater')) {
                         'name' => $sub_field_name,
                     )
                 );
+
                 // Render the sub-field.
                 $html .= $this->renderSubField($sub_field_config, $sub_value);
             }
 
             $html .= '</div>';
+
             // End content.
             $html .= '</div>';
             // End row.

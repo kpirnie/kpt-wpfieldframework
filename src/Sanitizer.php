@@ -632,32 +632,46 @@ if (! class_exists('\KP\WPFieldFramework\Sanitizer')) {
          */
         private function sanitizeRepeater(mixed $value, array $field): array
         {
-            if (! is_array($value)) {
-                return array();
+            if (!is_array($value)) {
+                return [];
             }
 
-            $sub_fields = $field['fields'] ?? array();
-            $sanitized = array();
+            $sub_fields = $field['fields'] ?? [];
+            $sanitized = [];
+
+            $field_lookup = [];
+            foreach ($sub_fields as $sf) {
+                $field_lookup[$sf['id']] = $sf;
+            }
+
             foreach ($value as $row_index => $row_data) {
-                if (! is_array($row_data)) {
+                if (!is_array($row_data)) {
                     continue;
                 }
 
-                $sanitized_row = array();
-                foreach ($sub_fields as $sub_field) {
-                    $sub_field_id = $sub_field['id'];
-                    if (isset($row_data[ $sub_field_id ])) {
-                        $sanitized_row[ $sub_field_id ] = $this->sanitize($row_data[ $sub_field_id ], $sub_field);
+                $sanitized_row = [];
+                foreach ($row_data as $key => $val) {
+                    if (isset($field_lookup[$key])) {
+                        $sub_field = $field_lookup[$key];
+                        $type = $sub_field['type'] ?? 'text';
+
+                        if (in_array($type, ['group', 'accordion'], true)) {
+                            $sanitized_row[$key] = $this->sanitizeGroup($val, $sub_field);
+                        } elseif ($type === 'repeater') {
+                            $sanitized_row[$key] = $this->sanitizeRepeater($val, $sub_field);
+                        } else {
+                            $sanitized_row[$key] = $this->sanitize($val, $sub_field);
+                        }
+                    } else {
+                        $sanitized_row[$key] = $this->sanitizeUnknown($val);
                     }
                 }
 
-                // Only add non-empty rows.
-                if (! empty($sanitized_row)) {
+                if (!empty($sanitized_row)) {
                     $sanitized[] = $sanitized_row;
                 }
             }
 
-            // Re-index array.
             return array_values($sanitized);
         }
 
@@ -671,25 +685,33 @@ if (! class_exists('\KP\WPFieldFramework\Sanitizer')) {
          */
         private function sanitizeGroup(mixed $value, array $field): array
         {
-            if (! is_array($value)) {
-                return array();
+            if (!is_array($value)) {
+                return [];
             }
 
-            $sub_fields = $field['fields'] ?? array();
-            $group_id = $field['id'] ?? '';
-            $sanitized = array();
+            $sub_fields = $field['fields'] ?? [];
+            $sanitized = [];
 
-            foreach ($sub_fields as $sub_field) {
-                $sub_field_id = $sub_field['id'];
+            // Build a lookup by field ID
+            $field_lookup = [];
+            foreach ($sub_fields as $sf) {
+                $field_lookup[$sf['id']] = $sf;
+            }
 
-                // Check for prefixed key (how it comes from the form)
-                $prefixed_id = $group_id . '_' . $sub_field_id;
+            foreach ($value as $key => $val) {
+                if (isset($field_lookup[$key])) {
+                    $sub_field = $field_lookup[$key];
+                    $type = $sub_field['type'] ?? 'text';
 
-                if (isset($value[$prefixed_id])) {
-                    $sanitized[$prefixed_id] = $this->sanitize($value[$prefixed_id], $sub_field);
-                } elseif (isset($value[$sub_field_id])) {
-                    // Fallback to non-prefixed key
-                    $sanitized[$sub_field_id] = $this->sanitize($value[$sub_field_id], $sub_field);
+                    if (in_array($type, ['group', 'accordion'], true)) {
+                        $sanitized[$key] = $this->sanitizeGroup($val, $sub_field);
+                    } elseif ($type === 'repeater') {
+                        $sanitized[$key] = $this->sanitizeRepeater($val, $sub_field);
+                    } else {
+                        $sanitized[$key] = $this->sanitize($val, $sub_field);
+                    }
+                } else {
+                    $sanitized[$key] = $this->sanitizeUnknown($val);
                 }
             }
 

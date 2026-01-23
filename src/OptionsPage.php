@@ -102,6 +102,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
             $this->config = wp_parse_args($config, $this->defaults);
             $this->field_types = $field_types;
             $this->storage = $storage;
+
             // Set option name from menu slug if not provided.
             if (empty($this->config['option_name'])) {
                 $this->config['option_name'] = str_replace('-', '_', $this->config['menu_slug']);
@@ -163,6 +164,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                     'fields'      => array(),
                 )
             );
+
             // Process fields for this section.
             if (! empty($section['fields'])) {
                 foreach ($section['fields'] as $field) {
@@ -292,6 +294,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                     },
                     $this->config['menu_slug']
                 );
+
                 // Register fields for this section.
                 if (! empty($this->fields[ $section_id ])) {
                     foreach ($this->fields[ $section_id ] as $field) {
@@ -388,6 +391,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
         {
             $tabs = $this->config['tabs'];
             $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
+
             // Render tab navigation.
             echo '<nav class="nav-tab-wrapper wp-clearfix">';
             foreach ($tabs as $tab_id => $tab) {
@@ -421,6 +425,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
             <form action="options.php" method="post" class="kp-wsf-options-form">
                 <?php
                 settings_fields($this->config['menu_slug']);
+
                 // If tabbed, only show sections for current tab.
                 if (! empty($current_tab)) {
                     $this->renderTabSections($current_tab);
@@ -477,6 +482,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                 if ($section['title']) {
                     echo '<h2>' . esc_html($section['title']) . '</h2>';
                 }
+
                 // Render section.
                 if (!empty($section['description'])) {
                     $this->renderSectionDescription($section);
@@ -611,12 +617,11 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                 $field = $all_fields[$field_id] ?? null;
                 if ($field) {
                     $type = $field['type'] ?? 'text';
-                    if (in_array($type, ['checkbox', 'switch'], true) && !isset($input[$field_id])) {
+                    if (in_array($type, ['checkbox'], true) && !isset($input[$field_id])) {
                         $sanitized[$field_id] = false;
                     }
                 }
             }
-
             return $sanitized;
         }
 
@@ -740,6 +745,11 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                     // Handle group sub-fields.
                     if (($field['type'] ?? '') === 'group' && !empty($field['fields'])) {
                         $all_fields[$field['id']]['_is_group'] = true;
+                    }
+
+                    // Handle accordion sub-fields.
+                    if (($field['type'] ?? '') === 'accordion' && !empty($field['fields'])) {
+                        $all_fields[$field['id']]['_is_accordion'] = true;
                     }
                 }
             }
