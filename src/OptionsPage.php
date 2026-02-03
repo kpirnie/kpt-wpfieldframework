@@ -392,16 +392,26 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
         {
             $tabs = $this->config['tabs'];
             $current_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : array_key_first($tabs);
+            $layout_class = $this->config['tab_layout'] === 'vertical' ? 'kp-wsf-tabs-vertical' : 'kp-wsf-tabs-horizontal';
 
-            // Render tab navigation.
-            echo '<nav class="nav-tab-wrapper wp-clearfix">';
+            echo '<div class="kp-wsf-tabs-wrapper ' . esc_attr($layout_class) . '">';
+
+            // Render tab navigation
+            echo '<nav class="kp-wsf-tab-nav">';
             foreach ($tabs as $tab_id => $tab) {
-                $active = ($current_tab === $tab_id) ? ' nav-tab-active' : '';
-                printf('<a href="%s" class="nav-tab%s">%s</a>', esc_url(add_query_arg('tab', $tab_id)), esc_attr($active), esc_html($tab['title'] ?? $tab_id));
+                $active = ($current_tab === $tab_id) ? ' kp-wsf-tab-active' : '';
+                printf(
+                    '<a href="%s" class="kp-wsf-tab%s">%s</a>',
+                    esc_url(add_query_arg('tab', $tab_id)),
+                    esc_attr($active),
+                    esc_html($tab['title'] ?? $tab_id)
+                );
             }
             echo '</nav>';
 
-            // Render tab description if present.
+            echo '<div class="kp-wsf-tab-content">';
+
+            // Render tab description if present
             if (!empty($tabs[$current_tab]['description'])) {
                 printf(
                     '<p class="kp-wsf-tab-description">%s</p>',
@@ -409,8 +419,11 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                 );
             }
 
-            // Render form with only current tab's sections.
+            // Render form with only current tab's sections
             $this->renderForm($current_tab);
+
+            echo '</div>'; // .kp-wsf-tab-content
+            echo '</div>'; // .kp-wsf-tabs-wrapper
         }
 
         /**

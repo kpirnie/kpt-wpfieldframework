@@ -184,15 +184,15 @@
     border-radius: 50%;
 }
 
-.kp-wsf-switch input:checked + .kp-wsf-switch-slider {
+.kp-wsf-switch input:checked+.kp-wsf-switch-slider {
     background-color: #2271b1;
 }
 
-.kp-wsf-switch input:focus + .kp-wsf-switch-slider {
+.kp-wsf-switch input:focus+.kp-wsf-switch-slider {
     box-shadow: 0 0 1px #2271b1;
 }
 
-.kp-wsf-switch input:checked + .kp-wsf-switch-slider:before {
+.kp-wsf-switch input:checked+.kp-wsf-switch-slider:before {
     transform: translateX(24px);
 }
 
@@ -367,7 +367,7 @@
     margin-bottom: 0;
 }
 
-.kp-wsf-repeater__field > label {
+.kp-wsf-repeater__field>label {
     display: block;
     font-weight: 600;
     margin-bottom: 5px;
@@ -403,6 +403,7 @@
     background: #f0f6fc;
     border: 2px dashed #2271b1;
 }
+
 /* ==========================================================================
    Conditional Fields
    ========================================================================== */
@@ -429,11 +430,11 @@
     border-top: 1px solid #c3c4c7;
 }
 
-.kp-wsf-export-import > h2 {
+.kp-wsf-export-import>h2 {
     margin-bottom: 10px;
 }
 
-.kp-wsf-export-import > p.description {
+.kp-wsf-export-import>p.description {
     margin-bottom: 20px;
 }
 
@@ -467,6 +468,7 @@
     margin-top: 10px;
     font-style: italic;
 }
+
 /* ==========================================================================
    Inline Fields (Repeaters & Groups)
    ========================================================================== */
@@ -490,7 +492,8 @@
 }
 
 /* Group fields container as flex */
-.kp-wsf-group-fields, .inline-field {
+.kp-wsf-group-fields,
+.inline-field {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
@@ -500,7 +503,11 @@
 .kp-wsf-group-field {
     flex: 0 0 100%;
 }
-.kp-wsf-group-field label:first-child {padding-bottom:20px !important;font-weight: 500;}
+
+.kp-wsf-group-field label:first-child {
+    padding-bottom: 20px !important;
+    font-weight: 500;
+}
 
 /* Inline group fields share the row */
 .kp-wsf-group-field--inline {
@@ -510,6 +517,7 @@
 
 /* Responsive - stack on small screens */
 @media screen and (max-width: 600px) {
+
     .kp-wsf-repeater__field--inline,
     .kp-wsf-group-field--inline {
         flex: 0 0 100%;
@@ -521,6 +529,7 @@
     margin-bottom: 15px;
     background: #fff;
 }
+
 .kp-wsf-accordion__header {
     display: flex;
     align-items: center;
@@ -529,28 +538,146 @@
     cursor: pointer;
     user-select: none;
 }
+
 .kp-wsf-accordion__title {
     flex: 1;
     font-weight: 600;
 }
+
 .kp-wsf-accordion__icon {
     transition: transform 0.2s;
 }
+
 .kp-wsf-accordion--open .kp-wsf-accordion__icon {
     transform: rotate(180deg);
 }
+
 .kp-wsf-accordion__content {
     display: none;
     padding: 15px;
     border-top: 1px solid #c3c4c7;
 }
+
 .kp-wsf-accordion--open .kp-wsf-accordion__content {
     display: block;
 }
-.kp-wsf-description--accordion, .kp-wsf-description--group, .kp-wsf-description--repeater {
-    padding-bottom:20px !important;
+
+.kp-wsf-description--accordion,
+.kp-wsf-description--group,
+.kp-wsf-description--repeater {
+    padding-bottom: 20px !important;
 }
+
 .regular-text,
-.wp-core-ui select{
-    width:100% !important;
+.wp-core-ui select {
+    width: 100% !important;
+}
+
+/* ==========================================================================
+   Tabbed Options Pages
+   ========================================================================== */
+
+/* Horizontal Tabs (Default) */
+.kp-wsf-tabs-horizontal .kp-wsf-tab-nav {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.kp-wsf-tabs-horizontal .kp-wsf-tab {
+    padding: 10px 15px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: #2271b1;
+    margin-bottom: -1px;
+}
+
+.kp-wsf-tabs-horizontal .kp-wsf-tab:hover {
+    background: #f0f0f1;
+}
+
+.kp-wsf-tabs-horizontal .kp-wsf-tab.kp-wsf-tab-active {
+    background: #fff;
+    border-color: #c3c4c7;
+    border-bottom-color: #fff;
+    color: #000;
+    font-weight: 600;
+}
+
+.kp-wsf-tabs-horizontal .kp-wsf-tab-content {
+    background: #fff;
+}
+
+/* Vertical Tabs */
+.kp-wsf-tabs-vertical {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.kp-wsf-tabs-vertical .kp-wsf-tab-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 200px;
+    flex-shrink: 0;
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+.kp-wsf-tabs-vertical .kp-wsf-tab {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    background: transparent;
+    color: #2271b1;
+    border-radius: 2px;
+    transition: background 0.15s ease;
+}
+
+.kp-wsf-tabs-vertical .kp-wsf-tab:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.kp-wsf-tabs-vertical .kp-wsf-tab.kp-wsf-tab-active {
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.kp-wsf-tabs-vertical .kp-wsf-tab-content {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    padding: 20px;
+}
+
+/* Responsive - stack vertical tabs on mobile */
+@media screen and (max-width: 782px) {
+    .kp-wsf-tabs-vertical {
+        flex-direction: column;
+    }
+
+    .kp-wsf-tabs-vertical .kp-wsf-tab-nav {
+        width: 100%;
+        min-width: 0;
+        flex-direction: row;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .kp-wsf-tabs-vertical .kp-wsf-tab {
+        white-space: nowrap;
+    }
+
+    .kp-wsf-tabs-vertical .kp-wsf-tab-content {
+        width: 100%;
+    }
 }
