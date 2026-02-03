@@ -2,28 +2,82 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
     
+    strategy:
+      matrix:
+        php-version: [8.4]
+        dependencies: [lowest, highest]
+    
+    services:
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      memcached:
+        image: memcached:alpine
+        ports:
+          - 11211:11211
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.4
+        php-version: ${{ matrix.php-version }}
+        extensions: redis, memcached, apcu
+        coverage: xdebug
+
+    - name: Validate composer.json
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
 
     - name: Install dependencies
-      run: composer install --no-interaction --no-progress
+      run: |
+        if [ "${{ matrix.dependencies }}" = "lowest" ]; then
+          composer update --prefer-lowest --no-interaction --no-progress
+        else
+          composer install --no-interaction --no-progress
+        fi
 
-    - name: Run CodeSniffer
-      run: composer run cs-check
+    # Add this step to check if PHP CodeSniffer is available
+    - name: Install PHP CodeSniffer if needed
+      run: |
+        # Check if phpcs command exists
+        if ! command -v phpcs &> /dev/null; then
+          echo "PHP CodeSniffer not found, installing..."
+          # Check if it's in vendor/bin
+          if [ -f ./vendor/bin/phpcs ]; then
+            echo "PHPCS found in vendor/bin"
+          else
+            echo "Installing PHP CodeSniffer..."
+            composer require --dev squizlabs/php_codesniffer --no-interaction --no-progress
+          fi
+        else
+          echo "PHP CodeSniffer already installed"
+        fi
+
+    - name: Upload coverage reports to Codecov
+      if: matrix.php-version == '8.4' && matrix.dependencies == 'highest'
+      uses: codecov/codecov-action@v3

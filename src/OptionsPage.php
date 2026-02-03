@@ -361,7 +361,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                 add_settings_error($this->config['menu_slug'] . '_messages', $this->config['menu_slug'] . '_message', __('Settings Saved', 'kp-wsf'), 'updated');
             }
 
-?>
+            ?>
             <div class="wrap kp-wsf-options-page">
                 <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
@@ -369,17 +369,17 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
 
                 <?php
                 if (! empty($this->config['tabs'])) :
-                ?>
+                    ?>
                     <?php $this->renderTabs(); ?>
-                <?php
+                    <?php
                 else :
-                ?>
+                    ?>
                     <?php $this->renderForm(); ?>
-                <?php
+                    <?php
                 endif;
                 ?>
             </div>
-        <?php
+            <?php
         }
 
         /**
@@ -422,7 +422,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
          */
         private function renderForm(string $current_tab = ''): void
         {
-        ?>
+            ?>
             <form action="options.php" method="post" class="kp-wsf-options-form">
                 <?php
                 settings_fields($this->config['menu_slug']);
@@ -716,7 +716,7 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
                     </div>
                 </div>
             </div>
-<?php
+            <?php
         }
 
         /**
