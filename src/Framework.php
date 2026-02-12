@@ -36,6 +36,13 @@ if (! class_exists('\KP\WPFieldFramework\Framework')) {
     final class Framework
     {
         /**
+         * Default maximum size for JSON imports (bytes).
+         *
+         * @since 1.0.0
+         * @var int
+         */
+        private const DEFAULT_MAX_IMPORT_BYTES = 1048576;
+        /**
          * Singleton instance.
          *
          * @since 1.0.0
@@ -685,11 +692,13 @@ if (! class_exists('\KP\WPFieldFramework\Framework')) {
         {
             check_ajax_referer('kp_wsf_nonce', 'nonce');
 
-            if (!current_user_can('manage_options')) {
-                wp_send_json_error(['message' => __('Permission denied.', 'kp-wsf')]);
-            }
-
             $menu_slug = isset($_POST['menu_slug']) ? sanitize_key($_POST['menu_slug']) : '';
+            $required_capability = $this->getCapabilityForMenuSlug($menu_slug);
+
+            if (! current_user_can($required_capability)) {
+                wp_send_json_error(['message' => __('Permission denied.', 'kp-wsf')]);
+                return;
+            }
 
             if (!empty($menu_slug)) {
                 // Export specific options page with defaults.
@@ -723,15 +732,26 @@ if (! class_exists('\KP\WPFieldFramework\Framework')) {
         {
             check_ajax_referer('kp_wsf_nonce', 'nonce');
 
-            if (!current_user_can('manage_options')) {
-                wp_send_json_error(['message' => __('Permission denied.', 'kp-wsf')]);
-            }
-
             $json = isset($_POST['json']) ? wp_unslash($_POST['json']) : '';
             $menu_slug = isset($_POST['menu_slug']) ? sanitize_key($_POST['menu_slug']) : '';
+            $required_capability = $this->getCapabilityForMenuSlug($menu_slug);
+
+            if (! current_user_can($required_capability)) {
+                wp_send_json_error(['message' => __('Permission denied.', 'kp-wsf')]);
+                return;
+            }
 
             if (empty($json)) {
                 wp_send_json_error(['message' => __('No data provided.', 'kp-wsf')]);
+                return;
+            }
+
+            $max_import_bytes = (int) apply_filters('kp_wsf_max_import_bytes', self::DEFAULT_MAX_IMPORT_BYTES, $menu_slug);
+            if ($max_import_bytes > 0 && strlen($json) > $max_import_bytes) {
+                wp_send_json_error([
+                    'message' => __('Import file is too large.', 'kp-wsf'),
+                ]);
+                return;
             }
 
             // Determine allowed options.
@@ -764,6 +784,25 @@ if (! class_exists('\KP\WPFieldFramework\Framework')) {
                     'errors'  => $result['errors'],
                 ]);
             }
+        }
+
+        /**
+         * Get the required capability for export/import by menu slug.
+         *
+         * @since  1.0.0
+         * @param  string $menu_slug The options page menu slug.
+         * @return string            Capability to require.
+         */
+        private function getCapabilityForMenuSlug(string $menu_slug): string
+        {
+            if (! empty($menu_slug)) {
+                $page = $this->getOptionsPageBySlug($menu_slug);
+                if ($page instanceof OptionsPage) {
+                    return $page->getCapability();
+                }
+            }
+
+            return 'manage_options';
         }
     }
 }

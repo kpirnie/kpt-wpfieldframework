@@ -228,6 +228,17 @@ if (! class_exists('\KP\WPFieldFramework\OptionsPage')) {
         }
 
         /**
+         * Get the required capability for this options page.
+         *
+         * @since  1.0.0
+         * @return string WordPress capability.
+         */
+        public function getCapability(): string
+        {
+            return (string) $this->config['capability'];
+        }
+
+        /**
          * Register the options page with WordPress.
          *
          * @since  1.0.0
