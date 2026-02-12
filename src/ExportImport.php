@@ -244,8 +244,19 @@ if (! class_exists('\KP\WPFieldFramework\ExportImport')) {
                 return $result;
             }
 
+            if (! is_uploaded_file($file['tmp_name'])) {
+                $result['errors'][] = __('Invalid uploaded file.', 'kp-wsf');
+                return $result;
+            }
+
+            $max_upload_size = (int) wp_max_upload_size();
+            if (! empty($file['size']) && $max_upload_size > 0 && (int) $file['size'] > $max_upload_size) {
+                $result['errors'][] = __('Uploaded file exceeds the maximum allowed size.', 'kp-wsf');
+                return $result;
+            }
+
             // Validate file type.
-            $file_type = wp_check_filetype($file['name'], ['json' => 'application/json']);
+            $file_type = wp_check_filetype_and_ext($file['tmp_name'], $file['name'], ['json' => 'application/json']);
             if ($file_type['ext'] !== 'json') {
                 $result['errors'][] = __('Invalid file type. Please upload a JSON file.', 'kp-wsf');
                 return $result;
